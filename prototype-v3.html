@@ -1,0 +1,2357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PosterChild — Onboarding</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --y: #F5B700; --yl: #FFFBEB; --navy: #1B2459; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 4px; }
+    .nav-item { display:flex; align-items:center; gap:8px; padding:6px 12px; border-radius:8px; font-size:13px; color:#374151; cursor:pointer; transition:all .15s; }
+    .nav-item:hover { background:#F9FAFB; }
+    .nav-item.active { background:var(--yl); color:#92400E; font-weight:600; }
+    .nav-item.active svg { color:#D97706; }
+    .nav-item.nav-locked { opacity:.48; cursor:not-allowed; }
+    .nav-item.nav-locked:hover { background:transparent; }
+    .nav-section { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:#9CA3AF; padding:14px 12px 5px; }
+    .step-circle { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; transition:all .2s; }
+    .step-circle.done { background:#F5B700; color:#fff; border:2px solid #F5B700; }
+    .step-circle.active { background:#fff; border:2px solid #F5B700; color:#F5B700; }
+    .step-circle.pending { background:#fff; border:2px solid #E5E7EB; color:#9CA3AF; }
+    .btn-yellow { background:#F5B700; color:#1a1a1a; font-weight:600; font-size:13px; padding:8px 16px; border-radius:8px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all .15s; }
+    .btn-yellow:hover { background:#E5A800; }
+    .btn-yellow:disabled { background:#E5E7EB; color:#9CA3AF; cursor:not-allowed; }
+    .btn-outline { background:#fff; color:#374151; font-weight:500; font-size:13px; padding:8px 16px; border-radius:8px; border:1.5px solid #E5E7EB; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all .15s; }
+    .btn-outline:hover { border-color:#D1D5DB; background:#F9FAFB; }
+    .btn-outline-yellow { background:#fff; color:#D97706; font-weight:600; font-size:13px; padding:7px 14px; border-radius:8px; border:1.5px solid #F5B700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all .15s; font-size:12px; }
+    .btn-outline-yellow:hover { background:var(--yl); }
+    .card { background:#fff; border-radius:12px; border:1px solid #E5E7EB; }
+    .stat-arrow { color:#F5B700; font-size:16px; }
+    .ethos-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.25;
+      white-space: nowrap;
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1.5px solid #E5E7EB;
+      color: #374151;
+      background: #fff;
+      cursor: pointer;
+      transition: all .15s;
+      flex-shrink: 0;
+      align-self: flex-start;
+    }
+    .ethos-tag:hover { border-color:#F5B700; color:#92400E; background:var(--yl); }
+    .ethos-tag.on { background:#F5B700; border-color:#F5B700; color:#1a1a1a; font-weight:600; }
+    .ethos-tag.ethos-tag--display { pointer-events: none; cursor: default; }
+    .ethos-summary-wrap { display:flex; flex-wrap:wrap; gap:8px; min-height:44px; align-items:flex-start; }
+    .tpl-card { border-radius:12px; border:2px solid #E5E7EB; overflow:hidden; cursor:pointer; transition:all .2s; background:#fff; }
+    .tpl-card:hover { border-color:#F5B700; box-shadow:0 4px 12px rgba(245,183,0,.15); }
+    .tpl-card.selected { border-color:#F5B700; box-shadow:0 0 0 3px rgba(245,183,0,.2); }
+    input, textarea { outline:none; }
+    input:focus, textarea:focus { border-color:#F5B700 !important; box-shadow:0 0 0 3px rgba(245,183,0,.15) !important; }
+    #toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+      background:#111827; color:#fff; font-size:13px; font-weight:500; padding:12px 20px; border-radius:10px;
+      box-shadow:0 8px 32px rgba(0,0,0,.25); z-index:9999; opacity:0; transition:opacity .2s, transform .25s ease; max-width:90vw; text-align:center; pointer-events:none;
+    }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    @keyframes progress-fill { from { width:0% } to { width:90% } }
+    @keyframes progress-full { from { width:0% } to { width:100% } }
+    @keyframes item-appear { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes check-pop { 0%{opacity:0;transform:scale(0)} 60%{transform:scale(1.3)} 100%{opacity:1;transform:scale(1)} }
+    @keyframes result-rise { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes stat-count { from { opacity:0; transform:scale(.8); } to { opacity:1; transform:scale(1); } }
+    @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+    @keyframes fade-in { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+    .pb-animate { animation: fade-in .35s ease forwards; }
+    .progress-bar-animated { animation: progress-fill 1.8s cubic-bezier(.4,0,.2,1) forwards; }
+    .pb-btn-purple { background:#5B4FCF; color:#fff; font-weight:700; font-size:15px; padding:14px 0; border-radius:10px; border:none; cursor:pointer; width:100%; transition:background .15s; }
+    .pb-btn-purple:hover { background:#4C41B8; }
+    .pb-btn-purple:disabled { background:#C4C0E8; cursor:not-allowed; }
+    .pb-date-btn { flex:1; background:#fff; border:1.5px solid #E5E7EB; border-radius:10px; padding:10px 6px; cursor:pointer; text-align:center; transition:all .15s; }
+    .pb-date-btn:hover { border-color:#5B4FCF; }
+    .pb-date-btn.selected { border-color:#5B4FCF; background:#EEF2FF; }
+    .pb-time-btn { background:#EEF2FF; border:1.5px solid transparent; border-radius:8px; padding:9px 0; cursor:pointer; font-size:13px; font-weight:600; color:#5B4FCF; text-align:center; width:100%; transition:all .15s; }
+    .pb-time-btn:hover { border-color:#5B4FCF; }
+    .pb-time-btn.selected { background:#5B4FCF; color:#fff; border-color:#5B4FCF; }
+  </style>
+</head>
+<body class="bg-gray-50 overflow-hidden h-screen">
+<div id="app" class="flex h-screen overflow-hidden"></div>
+<script>
+
+// ── State ─────────────────────────────────────────────────────────────
+let S = {
+  screen:   'email',
+  narrative: null,
+  template: null,
+  formStep: 0,
+  missionDone: false,
+  published:   false,
+  praiseSent:  false,
+  forgeBaseline: null,
+  forgeGoalBody: false,
+  forgeGoalImage: false,
+  forgeGoalQuote: false,
+  fundingFocus: null,
+  uploadProgress: 0,
+  showScheduleModal: false,
+  showUploadModal: false,
+  showUploadSuccess: false,
+  selectedDate: null,
+  selectedTime: null,
+  uploadSkipped: false,
+  analysisPhase: 0,
+};
+
+// ── Data ──────────────────────────────────────────────────────────────
+const TEMPLATES = [
+  { id:'human-story',    name:'The Human Story',     desc:'Photography-first, warm storytelling built around faces and personal quotes.',
+    tags:['Human','Community','Heart'],
+    bg:'#FFFBF0', accent:'#F59E0B',
+    preview:`<div style="background:#FFFBF0;padding:12px;height:100%;box-sizing:border-box"><div style="background:linear-gradient(135deg,#FDE68A,#FCA5A5);height:56px;border-radius:7px;margin-bottom:9px"></div><div style="background:#92400E;height:8px;border-radius:3px;width:80%;margin-bottom:5px"></div><div style="background:#B45309;height:6px;border-radius:3px;width:55%;margin-bottom:9px"></div><div style="border-left:3px solid #F59E0B;padding-left:7px"><div style="background:#FDE68A;height:5px;border-radius:2px;margin-bottom:3px"></div><div style="background:#FDE68A;height:5px;border-radius:2px;width:70%"></div></div></div>` },
+  { id:'bold-statement', name:'The Bold Statement',  desc:'High-contrast, headline-first. For orgs that stop the scroll and demand attention.',
+    tags:['Bold','Economic','Policy'],
+    bg:'#111', accent:'#F59E0B',
+    preview:`<div style="background:#111;padding:12px;height:100%;box-sizing:border-box"><div style="background:#fff;height:11px;border-radius:3px;width:88%;margin-bottom:5px"></div><div style="background:#F5B700;height:7px;border-radius:2px;width:46%;margin-bottom:13px"></div><div style="background:#1F2937;height:36px;border-radius:6px;margin-bottom:9px"></div><div style="background:#F5B700;height:20px;border-radius:6px;width:54%;margin:0 auto;display:flex;align-items:center;justify-content:center"><div style="background:#92400E;height:4px;border-radius:2px;width:50%"></div></div></div>` },
+  { id:'data-pulse',     name:'The Data Pulse',      desc:'Metrics front and center. Authoritative and built for evidence-based organizations.',
+    tags:['Economic','Evidence','Policy'],
+    bg:'#F9FAFB', accent:'#3B82F6',
+    preview:`<div style="background:#F9FAFB;padding:10px;height:100%;box-sizing:border-box"><div style="background:#E5E7EB;height:6px;border-radius:3px;margin-bottom:9px;width:58%"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px"><div style="background:#fff;border:1px solid #E5E7EB;border-radius:6px;padding:6px"><div style="background:#111;height:10px;border-radius:2px;width:55%;margin-bottom:3px"></div><div style="background:#E5E7EB;height:4px;border-radius:99px"></div></div><div style="background:#fff;border:1px solid #E5E7EB;border-radius:6px;padding:6px"><div style="background:#111;height:10px;border-radius:2px;width:55%;margin-bottom:3px"></div><div style="background:#E5E7EB;height:4px;border-radius:99px;width:70%"></div></div></div><div style="background:#fff;border:1px solid #E5E7EB;border-radius:6px;padding:6px"><div style="background:#E5E7EB;height:4px;border-radius:2px;margin-bottom:3px"></div><div style="background:#111;height:4px;border-radius:2px;width:65%"></div></div></div>` },
+  { id:'community-feed', name:'The Community Feed',  desc:'A living gallery of moments — many voices, many faces. Community as co-author.',
+    tags:['Community','Heart'],
+    bg:'#FFFFFF', accent:'#10B981',
+    preview:`<div style="background:#fff;padding:10px;height:100%;box-sizing:border-box"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:9px"><div style="background:#FEF9C3;border-radius:5px;height:46px"></div><div style="background:#DCFCE7;border-radius:5px;height:46px"></div><div style="background:#E0F2FE;border-radius:5px;height:46px"></div></div><div style="background:#F3F4F6;height:5px;border-radius:2px;margin-bottom:4px"></div><div style="background:#F3F4F6;height:5px;border-radius:2px;width:66%"></div></div>` },
+  { id:'the-movement',   name:'The Movement',        desc:'Urgency built in. High-energy layouts for orgs mobilizing people right now.',
+    tags:['Bold','Community','Policy'],
+    bg:'#111827', accent:'#EF4444',
+    preview:`<div style="background:#111827;padding:10px;height:100%;box-sizing:border-box"><div style="background:linear-gradient(135deg,#DC2626,#F97316);height:48px;border-radius:6px;margin-bottom:8px"></div><div style="background:#fff;height:8px;border-radius:3px;width:84%;margin-bottom:5px"></div><div style="background:#6B7280;height:5px;border-radius:2px;width:58%;margin-bottom:8px"></div><div style="background:#EF4444;height:19px;border-radius:5px;width:46%;display:flex;align-items:center;justify-content:center"><div style="background:#fff;height:3px;border-radius:2px;width:48%"></div></div></div>` },
+  { id:'steady-voice',   name:'The Steady Voice',    desc:'Editorial, calm, trustworthy. For orgs with a long track record worth reading.',
+    tags:['Human','Evidence'],
+    bg:'#FFFFFF', accent:'#6B7280',
+    preview:`<div style="background:#fff;padding:0;height:100%;box-sizing:border-box;overflow:hidden"><div style="background:#F3F4F6;padding:5px 9px;display:flex;align-items:center;gap:4px"><div style="background:#D1D5DB;height:4px;border-radius:2px;width:17%"></div><div style="background:#D1D5DB;height:4px;border-radius:2px;width:13%"></div><div style="background:#111;height:4px;border-radius:2px;width:11%;margin-left:auto"></div></div><div style="padding:9px"><div style="background:#111;height:8px;border-radius:3px;width:76%;margin-bottom:7px"></div><div style="background:#E5E7EB;height:4px;border-radius:2px;margin-bottom:3px"></div><div style="background:#E5E7EB;height:4px;border-radius:2px;width:88%;margin-bottom:3px"></div><div style="background:#E5E7EB;height:4px;border-radius:2px;width:60%"></div></div></div>` },
+];
+
+const ORG = {
+  name:'Hope Harbor Collective', brandKit:'https://drive.google.com/brand-kit',
+  contentVault:'https://dropbox.com/story-assets', website:'https://hopeharbor.org',
+  instagram:'@hopeharbor', teamMembers:'Amina, Jay, Carlos',
+  fundingLead:'Leah Morgan', techLead:'Jason Kim',
+  anchorFunders:'RWJF, Kresge Foundation', dreamFunder:'Ford Foundation',
+  similarOrgs:'Community Catalyst, Families Forward',
+  brandPrimary:'#1B2459',
+  brandAccent:'#F5B700',
+  brandFonts:'Inter / System',
+  mission:'We help families navigate uncertainty with consistent, dignified community support.',
+  programs:['Rapid response support','Navigation + benefits access','Community advocates','Warm handoffs to care'],
+  testimonials:[
+    'They showed up for my family when everything felt uncertain.',
+    'I felt respected for the first time — like I wasn’t alone.',
+    'I finally knew what to do next. That changed everything.',
+  ],
+};
+
+const STORY = {
+  title:'How families found stability through trusted community support',
+  body:'Our community members are not statistics first. They are parents, neighbors, and advocates navigating systems that were never built with them in mind. This story highlights what changes when support is consistent, dignified, and close to home.',
+  quote:'They showed up for my family when everything felt uncertain.',
+};
+
+const FORM_STEPS = [
+  { title:'Visual Identity',     hint:'Provide the raw materials needed to style the platform to your brand.',
+    fields:[{k:'brandKit',label:'Brand kit / style guide',ph:'https://canva.com/brand-hub...'},{k:'contentVault',label:'Content vault (Drive, Dropbox, Box)',ph:'https://drive.google.com/...'}] },
+  { title:'Digital Footprint',   hint:'Help us mirror your current online presence.',
+    fields:[{k:'website',label:'Website URL',ph:'https://yourorg.org'},{k:'instagram',label:'Instagram handle',ph:'@yourorg'}] },
+  { title:'Your Team',           hint:'Map the internal team so we know who to involve.',
+    fields:[{k:'teamMembers',label:'Storytelling team (names & emails)',ph:'Maria — maria@org.org\nJames — james@org.org',multi:true},{k:'fundingLead',label:'Funding lead name',ph:'Development Director'},{k:'techLead',label:'Tech / social lead',ph:'Social media manager'}] },
+  { title:'Funding Intelligence',hint:'Calibrate the platform to your specific financial goals.',
+    fields:[{k:'anchorFunders',label:'Current anchor funders (2–3)',ph:'Ford Foundation, RWJF...',multi:true},{k:'dreamFunder',label:'Your dream funder',ph:'The foundation you haven\'t cracked yet'},{k:'similarOrgs',label:'Best fundraising peers in your space',ph:'Charity: Water, Feeding America...'}] },
+  // { title:'Book Your Kickoff', hint:'All set! Pick a time to meet your team.', fields:[] },
+];
+
+const ONBOARDING_STEPS = [
+  { key:'narrative',label:'Narrative',       time:'2 min',  icon:'✦' },
+  { key:'funders',  label:'Funding Universe',time:'2 min',  icon:'$' },
+  { key:'template', label:'Brand Style',     time:'2 min',  icon:'⊞' },
+  { key:'logistics',label:'Confirm Details', time:'4–6 min',icon:'⊕' },
+  { key:'forge',    label:'First Story',     time:'10 min', icon:'✏' },
+  { key:'dashboard',label:'Micro-Mission',   time:'2 min',  icon:'✓' },
+];
+
+// ── Computed ──────────────────────────────────────────────────────────
+function firstIncompleteIdx() {
+  if (!S.narrative) return 0;
+  if (!S.fundingFocus) return 1;
+  if (!S.template) return 2;
+  if (S.formStep < 3) return 3;
+  if (!S.published) return 4;
+  if (!S.missionDone) return 5;
+  return -1;
+}
+function firstIncompleteScreen() {
+  const k = firstIncompleteIdx();
+  return k < 0 ? 'welcome' : ['narrative','funders','template','logistics','forge','dashboard'][k];
+}
+function stepDone(i) {
+  return (i===0&&!!S.narrative)||(i===1&&!!S.fundingFocus)||(i===2&&!!S.template)||(i===3&&S.formStep>=3)||(i===4&&S.published)||(i===5&&S.missionDone);
+}
+function stepperActiveIdx() {
+  if (String(S.screen).startsWith('jayla')) return -1;
+  const map = { narrative:0, funders:1, template:2, logistics:3, forge:4, celebration:4, dashboard:5 };
+  if (map[S.screen] !== undefined) return map[S.screen];
+  if (S.screen === 'welcome') return firstIncompleteIdx();
+  return -1;
+}
+
+function stepsCompleted() {
+  let n = 0;
+  if (S.narrative) n++;
+  if (S.fundingFocus) n++;
+  if (S.template) n++;
+  if (S.formStep >= 3) n++;
+  if (S.published) n++;
+  if (S.missionDone) n++;
+  return n;
+}
+
+function recommendedTplIds() {
+  const m = {
+    bold: ['bold-statement','the-movement'],
+    human: ['human-story','steady-voice'],
+    community: ['community-feed','human-story'],
+    economic: ['data-pulse','steady-voice'],
+    policy: ['bold-statement','data-pulse'],
+    hopeful: ['human-story','community-feed'],
+  };
+  const ids = m[S.narrative] || [];
+  const fallback = ['human-story','bold-statement'];
+  return [...new Set([...ids, ...fallback])].filter(Boolean);
+}
+
+// ── Navigation gates ────────────────────────────────────────────────────
+function canAccess(screen) {
+  if (PRE_BOARDING.includes(screen)) return true;
+  if (String(screen).startsWith('jayla')) return true;
+  if (screen === 'welcome') return true;
+  if (screen === 'narrative') return true;
+  if (screen === 'funders') return !!S.narrative;
+  if (screen === 'template') return !!S.narrative && !!S.fundingFocus;
+  if (screen === 'logistics') return !!S.narrative && !!S.fundingFocus && !!S.template;
+  if (screen === 'forge') return !!S.narrative && !!S.fundingFocus && !!S.template && S.formStep >= 3;
+  if (screen === 'celebration') return S.published;
+  if (screen === 'dashboard') return S.published;
+  return true;
+}
+let toastTimer;
+function toast(msg) {
+  clearTimeout(toastTimer);
+  let el = document.getElementById('toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+const PRE_BOARDING = ['email','upload-landing','great-start','pipeline-ready','no-schedule','booked'];
+function ensureValidScreen() {
+  if (PRE_BOARDING.includes(S.screen)) return;
+  if (String(S.screen).startsWith('jayla')) return;
+  if (S.screen === 'celebration' && !S.published) { S.screen = 'forge'; return; }
+  if (S.screen === 'welcome') return;
+  if (!canAccess(S.screen)) S.screen = firstIncompleteScreen();
+}
+
+// ── Actions ───────────────────────────────────────────────────────────
+function go(screen) {
+  if (!canAccess(screen)) {
+    toast('Complete the previous step first.');
+    return;
+  }
+  S.screen = screen;
+  render();
+}
+function pickTemplate(id) { S.template = id; render(); }
+function pickNarrative(id) { S.narrative = id; render(); }
+function pickFundingFocus(id) { S.fundingFocus = id; render(); }
+function advanceFromFunders() { S.screen = 'template'; render(); }
+function advForm(n) { S.formStep = n; render(); }
+function doPublish() {
+  S.published = true;
+  go('celebration');
+}
+function goToDashboardFromCelebration() {
+  if (!S.published) return;
+  go('dashboard');
+}
+function doMission() { S.missionDone = true; render(); }
+function doPraiseSend() { S.praiseSent = true; render(); }
+
+// ── Pre-Boarding Actions ───────────────────────────────────────────────
+let _uploadTimer = null;
+function startUpload() {
+  S.showUploadModal = true;
+  S.uploadSkipped = false;
+  render();
+  if (_uploadTimer) clearTimeout(_uploadTimer);
+  _uploadTimer = setTimeout(() => {
+    _uploadTimer = null;
+    S.showUploadModal = false;
+    S.showUploadSuccess = true;
+    render();
+  }, 2400);
+}
+function skipUpload() { S.uploadSkipped = true; S.screen = 'great-start'; render(); }
+function goFromUploadSuccess() { S.showUploadSuccess = false; S.screen = 'great-start'; S.analysisPhase = 0; render(); }
+function goFromGreatStart() { S.screen = 'pipeline-ready'; S.analysisPhase = 0; render(); }
+let _analysisTimer = null;
+function startAnalysisTimer() {
+  if (_analysisTimer) clearTimeout(_analysisTimer);
+  _analysisTimer = setTimeout(() => {
+    _analysisTimer = null;
+    if (S.screen === 'great-start' && S.analysisPhase === 0) {
+      S.analysisPhase = 1; render();
+    }
+  }, 4200);
+}
+function openScheduleModal() { S.showScheduleModal = true; render(); }
+function closeScheduleModal() { S.showScheduleModal = false; S.screen = 'no-schedule'; render(); }
+function selectPBDate(d) { S.selectedDate = d; render(); }
+function selectPBTime(t) { S.selectedTime = t; render(); }
+function confirmMeeting() {
+  if (!S.selectedDate || !S.selectedTime) return;
+  S.showScheduleModal = false;
+  S.screen = 'booked';
+  render();
+}
+function goToWorkspace() { S.screen = 'welcome'; render(); }
+
+function ensureForgeBaseline() {
+  if (!S.forgeBaseline) {
+    S.forgeBaseline = { body: STORY.body + '', quote: STORY.quote + '' };
+  }
+}
+function forgeBodyInput(el) {
+  ensureForgeBaseline();
+  STORY.body = el.value;
+  if (!S.forgeGoalBody && el.value.trim() !== S.forgeBaseline.body.trim()) {
+    S.forgeGoalBody = true;
+  }
+  render();
+}
+function forgeQuoteInput(el) {
+  ensureForgeBaseline();
+  STORY.quote = el.value;
+  if (!S.forgeGoalQuote && el.value.trim() !== S.forgeBaseline.quote.trim()) {
+    S.forgeGoalQuote = true;
+  }
+  render();
+}
+function forgeTitleInput(el) {
+  STORY.title = el.value;
+  render();
+}
+function forgeAddImage() {
+  if (!S.forgeGoalImage) {
+    S.forgeGoalImage = true;
+    render();
+  }
+}
+
+// ── SVG Icons ─────────────────────────────────────────────────────────
+const IC = {
+  dashboard: `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1"/></svg>`,
+  edit:      `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.5 1.5L13.5 4.5L5 13H2V10L10.5 1.5Z"/></svg>`,
+  list:      `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="4" x2="12" y2="4"/><line x1="3" y1="7.5" x2="12" y2="7.5"/><line x1="3" y1="11" x2="12" y2="11"/></svg>`,
+  folder:    `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 3.5C1 2.67 1.67 2 2.5 2H5.5L7 4H12.5C13.33 4 14 4.67 14 5.5V11.5C14 12.33 13.33 13 12.5 13H2.5C1.67 13 1 12.33 1 11.5V3.5Z"/></svg>`,
+  image:     `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="13" height="11" rx="1.5"/><path d="M1 10l3.5-3.5 3 3 2.5-2.5 4 4"/><circle cx="11" cy="5.5" r="1.5" fill="currentColor" stroke="none"/></svg>`,
+  calendar:  `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2.5" width="13" height="11" rx="1.5"/><line x1="4.5" y1="1" x2="4.5" y2="4"/><line x1="10.5" y1="1" x2="10.5" y2="4"/><line x1="1" y1="6.5" x2="14" y2="6.5"/></svg>`,
+  share:     `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11.5" cy="3" r="1.5"/><circle cx="3.5" cy="7.5" r="1.5"/><circle cx="11.5" cy="12" r="1.5"/><line x1="5" y1="8.5" x2="10" y2="11"/><line x1="5" y1="6.5" x2="10" y2="4"/></svg>`,
+  globe:     `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7.5" cy="7.5" r="6"/><ellipse cx="7.5" cy="7.5" rx="2.5" ry="6"/><line x1="1.5" y1="7.5" x2="13.5" y2="7.5"/></svg>`,
+  people:    `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="5.5" cy="4" r="2.5"/><path d="M1 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4"/><circle cx="11" cy="4.5" r="2"/><path d="M11 9c2 0 3.5 1.2 3.5 3.5"/></svg>`,
+  campaign:  `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 7.5C2 4.46 4.46 2 7.5 2S13 4.46 13 7.5"/><path d="M7.5 2v5.5l3-3"/></svg>`,
+  search:    `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="13.5" y2="13.5"/></svg>`,
+  building:  `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="11" height="12" rx="1"/><line x1="5.5" y1="2" x2="5.5" y2="14"/><line x1="9.5" y1="2" x2="9.5" y2="14"/><line x1="2" y1="6" x2="13" y2="6"/><line x1="2" y1="10" x2="5.5" y2="10"/></svg>`,
+  target:    `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7.5" cy="7.5" r="6"/><circle cx="7.5" cy="7.5" r="3"/><circle cx="7.5" cy="7.5" r="1" fill="currentColor" stroke="none"/></svg>`,
+};
+
+// ── Sidebar ───────────────────────────────────────────────────────────
+function sidebar() {
+  const sc = S.screen;
+  const navItem = (screen, icon, label, active, checkmark, locked) => `
+    <div class="nav-item ${active?'active':''} ${locked?'nav-locked':''}" onclick="go('${screen}')">
+      <span style="width:16px;flex-shrink:0;color:${active?'#D97706':locked?'#D1D5DB':'#9CA3AF'}">${icon}</span>
+      <span class="flex-1">${label}</span>
+      ${locked ? `<span style="font-size:10px;color:#D1D5DB">🔒</span>` : ''}
+      ${checkmark ? `<span style="color:#F5B700;font-size:12px">✓</span>` : ''}
+    </div>`;
+  const staticItem = (icon, label) => `
+    <div class="nav-item" style="cursor:default;opacity:.55">
+      <span style="width:16px;flex-shrink:0;color:#9CA3AF">${icon}</span>
+      <span>${label}</span>
+    </div>`;
+
+  const narrativeOk= !!S.narrative;
+  const templateOk = !!S.template;
+  const fundersOk  = !!S.fundingFocus;
+  const logisticsOk= S.formStep >= 3;
+  const publishedOk= S.published;
+
+  return `
+    <aside style="width:224px;flex-shrink:0;background:#fff;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;overflow-y:auto;z-index:10;">
+      <!-- Logo -->
+      <div style="padding:16px 14px 12px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;gap:8px;">
+        <div style="width:30px;height:30px;background:#F5B700;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#1a1a1a;">✦</div>
+        <span style="font-weight:800;font-size:15px;color:#111;">PosterChild</span>
+      </div>
+      <!-- Org name -->
+      <div style="padding:10px 14px 4px;">
+        <div style="font-size:12px;color:#9CA3AF;">Organization</div>
+        <div style="font-size:13px;font-weight:600;color:#111;margin-top:1px;">${ORG.name.split(' ').slice(0,2).join(' ')}</div>
+      </div>
+
+      <div style="padding:4px 8px;flex:1;">
+        <div class="nav-section">Onboarding</div>
+        ${navItem('welcome', IC.dashboard, 'Dashboard', sc==='welcome', false, false)}
+        ${navItem('narrative','✦',          'Narrative',       sc==='narrative',narrativeOk && sc!=='narrative', false)}
+        ${navItem('funders', '$',           'Funding Universe',sc==='funders',  fundersOk && sc!=='funders', !canAccess('funders'))}
+        ${navItem('template','⊞',           'Brand Style',     sc==='template', templateOk && sc!=='template', !canAccess('template'))}
+        ${navItem('logistics','⊕',          'Confirm Details',sc==='logistics',logisticsOk && sc!=='logistics', !canAccess('logistics'))}
+        ${navItem('forge',   IC.edit,       'First Story',    sc==='forge',    publishedOk && sc!=='forge', !canAccess('forge'))}
+        ${navItem('dashboard',IC.target,    'Micro-Mission',  sc==='dashboard',S.missionDone, !canAccess('dashboard'))}
+
+        <div class="nav-section" style="margin-top:10px;">Jayla</div>
+        ${navItem('jayla-prep',   '⏱', 'Prep (24h before)', sc==='jayla-prep',   false, false)}
+        ${navItem('jayla-live',   IC.edit, 'Live Story Forge', sc==='jayla-live',   S.published && sc!=='jayla-live', false)}
+        ${navItem('jayla-alerts', '🔔', 'Alerts & nudges',   sc==='jayla-alerts', false, false)}
+        ${navItem('jayla-praise', '💌', 'Praise queue',      sc==='jayla-praise', S.praiseSent && sc!=='jayla-praise', false)}
+
+        <div class="nav-section" style="margin-top:8px;">Publish</div>
+        ${staticItem(IC.edit,    'Create Post')}
+        ${staticItem(IC.list,    'Posts')}
+        ${staticItem(IC.folder,  'Content Library')}
+        ${staticItem(IC.image,   'Assets')}
+
+        <div class="nav-section" style="margin-top:8px;">Community</div>
+        ${staticItem(IC.people,  'Contacts')}
+        ${staticItem(IC.globe,   'Community Site')}
+
+        <div class="nav-section" style="margin-top:8px;">Fundraising</div>
+        ${staticItem(IC.campaign,'Campaigns')}
+        ${staticItem(IC.search,  'Donor Finder')}
+        ${staticItem(IC.building,'Similar Orgs')}
+        ${staticItem(IC.target,  'Prospects')}
+      </div>
+
+      <!-- User footer -->
+      <div style="padding:12px 14px;border-top:1px solid #F3F4F6;display:flex;align-items:center;gap:9px;">
+        <div style="width:30px;height:30px;background:#F5B700;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1a1a1a;flex-shrink:0;">DM</div>
+        <div style="min-width:0;">
+          <div style="font-size:12px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Darien Menendez</div>
+          <div style="font-size:11px;color:#9CA3AF;">darien@posterchild.ai</div>
+        </div>
+        <div style="width:8px;height:8px;background:#22C55E;border-radius:50%;flex-shrink:0;margin-left:auto;"></div>
+      </div>
+    </aside>`;
+}
+
+// ── Top Bar ───────────────────────────────────────────────────────────
+function topBar(title, sub) {
+  return `
+    <div style="background:#fff;border-bottom:1px solid #E5E7EB;padding:14px 28px;flex-shrink:0;">
+      <div style="font-size:11px;color:#9CA3AF;margin-bottom:2px;">Hope Harbor Collective</div>
+      <div style="font-size:20px;font-weight:700;color:#111;">${title}</div>
+      ${sub ? `<div style="font-size:13px;color:#6B7280;margin-top:2px;">${sub}</div>`:''}
+    </div>`;
+}
+function topBarJayla(title, sub) {
+  return `
+    <div style="background:#fff;border-bottom:1px solid #E5E7EB;padding:14px 28px;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+        <span style="font-size:11px;color:#9CA3AF;">Jayla · PosterChild Team</span>
+        <span style="font-size:10px;font-weight:700;background:#FFF8DC;color:#92400E;padding:2px 8px;border-radius:99px;">Internal</span>
+      </div>
+      <div style="font-size:20px;font-weight:700;color:#111;">${title}</div>
+      ${sub ? `<div style="font-size:13px;color:#6B7280;margin-top:2px;">${sub}</div>`:''}
+    </div>`;
+}
+function wrapJayla(title, sub, content) {
+  return sidebar() + `
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+      ${topBarJayla(title, sub)}
+      <div style="flex:1;overflow-y:auto;padding:24px 28px;background:#F7F8FA;">
+        ${content}
+      </div>
+    </div>`;
+}
+
+// ── Stepper ───────────────────────────────────────────────────────────
+function stepper() {
+  const done = stepsCompleted();
+  const pct = Math.round(done / ONBOARDING_STEPS.length * 100);
+  const ai = stepperActiveIdx();
+
+  const steps = ONBOARDING_STEPS.map((s,i) => {
+    const isDone = stepDone(i);
+    const isActive = i === ai;
+    const cls = isDone ? 'done' : isActive ? 'active' : 'pending';
+    const locked = !canAccess(s.key);
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;cursor:${locked?'not-allowed':'pointer'};opacity:${locked&&!isActive?0.45:1};" onclick="go('${s.key}')">
+        <div class="step-circle ${cls}">${isDone ? '✓' : s.icon}</div>
+        <div style="text-align:center;">
+          <div style="font-size:12px;font-weight:${isActive?700:500};color:${isActive?'#111':'#6B7280'}">${s.label}</div>
+          <div style="font-size:11px;color:#9CA3AF;">${s.time}</div>
+        </div>
+      </div>`;
+  }).join(`<div style="flex:1;height:2px;background:#E5E7EB;margin-top:15px;max-width:40px;align-self:flex-start;margin-top:16px;"></div>`);
+
+  return `
+    <div class="card" style="padding:18px 24px;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+        <div style="font-size:14px;font-weight:700;">Let's get you set up!</div>
+        <div style="font-size:12px;color:#6B7280;">${done}/${ONBOARDING_STEPS.length} Completed ›</div>
+      </div>
+      <div style="font-size:12px;color:#9CA3AF;margin-bottom:12px;">Complete these key actions to maximize your impact.</div>
+      <div style="height:3px;background:#F3F4F6;border-radius:99px;margin-bottom:18px;overflow:hidden;">
+        <div style="height:100%;background:#F5B700;border-radius:99px;transition:width .4s;width:${pct}%"></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:0;">${steps}</div>
+    </div>`;
+}
+
+// ── Shell wrapper ─────────────────────────────────────────────────────
+function wrap(titleBar, content) {
+  return sidebar() + `
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+      ${titleBar}
+      <div style="flex:1;overflow-y:auto;padding:24px 28px;background:#F7F8FA;">
+        ${content}
+      </div>
+    </div>`;
+}
+
+// ── Quick stats ───────────────────────────────────────────────────────
+function statCard(num, label, trend, color) {
+  return `
+    <div class="card" style="padding:18px 20px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="font-size:26px;font-weight:800;color:${color||'#F5B700'}">${num}</div>
+          <div style="font-size:13px;color:#374151;margin-top:1px;">${label}</div>
+          ${trend?`<div style="font-size:11px;color:#9CA3AF;margin-top:4px;">${trend}</div>`:''}
+        </div>
+        <span style="color:#F5B700;font-size:18px;margin-top:2px;">↗</span>
+      </div>
+    </div>`;
+}
+
+// ── Story card (dark) ─────────────────────────────────────────────────
+function storyCard(title, category, author, tags, gradient, heroBadge, quoteSnippet) {
+  const badge = heroBadge || 'Story Highlight';
+  const quoteHtml = quoteSnippet
+    ? `<div style="margin-top:8px;padding:8px 10px;background:#FFFBEB;border-left:3px solid #F5B700;border-radius:0 6px 6px 0;font-size:11px;font-style:italic;color:#57534E;line-height:1.45;">"${quoteSnippet}"</div>`
+    : '';
+  return `
+    <div class="card" style="overflow:hidden;">
+      <div style="height:170px;background:${gradient||'linear-gradient(160deg,#1B2459,#0F172A)'};position:relative;">
+        <div style="position:absolute;top:10px;left:10px;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.06em;">${category}</div>
+        <div style="position:absolute;top:10px;right:10px;font-size:10px;color:rgba(255,255,255,.5);">Created today</div>
+        <div style="position:absolute;top:36px;left:10px;background:#F5B700;color:#111;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">${badge}</div>
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:12px;background:linear-gradient(to top,rgba(0,0,0,.75),transparent);">
+          <div style="font-size:13px;font-weight:600;color:#fff;line-height:1.4;">${title}</div>
+        </div>
+      </div>
+      <div style="padding:12px 14px;">
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;">
+          ${tags.map(t=>`<span style="font-size:11px;border:1px solid #E5E7EB;border-radius:4px;padding:2px 8px;color:#6B7280;">${t}</span>`).join('')}
+        </div>
+        ${quoteHtml}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:${quoteSnippet?10:0};">
+          <span style="font-size:12px;color:#374151;font-weight:500;">${author}</span>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-outline" style="padding:5px 12px;font-size:12px;">▶ Skip</button>
+            <button class="btn-yellow" style="padding:5px 12px;font-size:12px;">✓ Mark as Used</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+function publishedStoryCard() {
+  const tags = [S.narrative ? (S.narrative[0].toUpperCase() + S.narrative.slice(1)) : 'Narrative', 'Live'];
+  const q = STORY.quote.length > 90 ? STORY.quote.slice(0, 90) + '…' : STORY.quote;
+  return storyCard(STORY.title, 'YOUR STORY', ORG.name, tags, 'linear-gradient(160deg,#1B2459,#0F172A)', 'Published', q);
+}
+
+// ── Screens ───────────────────────────────────────────────────────────
+function screenWelcome() {
+  const done = stepsCompleted();
+  const nextStep = ONBOARDING_STEPS.find((s,i) => {
+    if (i===0 && !S.narrative)         return true;
+    if (i===1 && !S.fundingFocus)       return true;
+    if (i===2 && !S.template)          return true;
+    if (i===3 && S.formStep < 4)       return true;
+    if (i===4 && !S.published)         return true;
+    if (i===5 && !S.missionDone)       return true;
+    return false;
+  });
+
+  return wrap(
+    topBar('Hey, Darien!', 'Welcome to PosterChild. Complete the steps below to activate your storytelling platform.'),
+    `
+    ${stepper()}
+
+    <!-- Next step CTA -->
+    ${nextStep ? `
+    <div class="card" style="padding:24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:20px;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:44px;height:44px;background:#FFF8DC;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${nextStep.icon}</div>
+        <div>
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:2px;">Up Next</div>
+          <div style="font-size:16px;font-weight:700;">${nextStep.label}</div>
+          <div style="font-size:12px;color:#6B7280;margin-top:2px;">Estimated time: ${nextStep.time}</div>
+        </div>
+      </div>
+      <button onclick="go('${nextStep.key}')" class="btn-yellow" style="padding:11px 24px;font-size:14px;white-space:nowrap;">
+        Start ${nextStep.label} →
+      </button>
+    </div>` : ''}
+
+    <!-- Step list -->
+    <div style="font-size:13px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">All Steps</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      ${ONBOARDING_STEPS.map((s, i) => {
+        const isDone = (i===0&&!!S.narrative)||(i===1&&!!S.fundingFocus)||(i===2&&!!S.template)||(i===3&&S.formStep>=3)||(i===4&&S.published)||(i===5&&S.missionDone);
+        const isNext = s === nextStep;
+        return `
+          <div class="card" style="padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;opacity:${isDone?1:isNext?1:.6};border:${isNext?'1.5px solid #F5B700':'1px solid #E5E7EB'};" onclick="go('${s.key}')">
+            <div style="width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;background:${isDone?'#F5B700':isNext?'#FFF8DC':'#F3F4F6'};color:${isDone?'#1a1a1a':isNext?'#92400E':'#9CA3AF'};border:2px solid ${isDone?'#F5B700':isNext?'#F5B700':'#E5E7EB'};">
+              ${isDone ? '✓' : s.icon}
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:${isNext?700:600};color:${isDone?'#374151':isNext?'#111':'#6B7280'};">${s.label}</div>
+              <div style="font-size:12px;color:#9CA3AF;margin-top:1px;">${s.time} · ${isDone?'Completed':isNext?'Up next':'Not started'}</div>
+            </div>
+            <span style="font-size:14px;color:${isDone?'#F5B700':'#D1D5DB'};">${isDone?'✓':'›'}</span>
+          </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Completion state -->
+    ${done === ONBOARDING_STEPS.length ? `
+    <div style="margin-top:20px;background:linear-gradient(135deg,#F5B700,#F59E0B);border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a1a;">🎉 Onboarding complete! Your platform is fully activated.</div>
+        <div style="font-size:12px;color:rgba(0,0,0,.55);margin-top:3px;">Head to your dashboard to see everything in action.</div>
+      </div>
+      <button onclick="go('dashboard')" style="background:#fff;color:#92400E;font-weight:700;font-size:13px;padding:10px 20px;border-radius:8px;border:none;cursor:pointer;">Open Dashboard →</button>
+    </div>` : ''}
+    `
+  );
+}
+
+function screenEthos() {
+  // Legacy screen — replaced by screenNarrative in the new flow.
+  return screenNarrative();
+}
+
+function screenNarrative() {
+  const SENTIMENT_COLORS = {
+    'Empowerment':    { bg:'#FFF8F0', text:'#C2410C', border:'#FED7AA' },
+    'Systemic Change':{ bg:'#F5F3FF', text:'#7C3AED', border:'#DDD6FE' },
+    'Innovation':     { bg:'#EFF6FF', text:'#1D4ED8', border:'#BFDBFE' },
+    'Possibility':    { bg:'#F0FDF4', text:'#15803D', border:'#BBF7D0' },
+    'Aspiration':     { bg:'#FFFBEB', text:'#B45309', border:'#FDE68A' },
+  };
+  const N = [
+    {
+      id:'reentry',
+      title:'Green reentry & sustainability careers',
+      sentiment:'Empowerment',
+      desc:'A justice-impacted individual transforms their future by building a career in clean energy through a paid incubator, representing the 30,000+ people we have helped bring home.',
+      evidence:['30,000+ people brought home from prison','Paid opportunities for justice-impacted individuals'],
+      audience:['Donors','Prospective Participants','Media'],
+    },
+    {
+      id:'legislative',
+      title:'Bipartisan legislative reform',
+      sentiment:'Systemic Change',
+      desc:'Unlikely allies find radical common ground to pass durable legislation, resulting in 25+ bills passed and safer neighborhoods.',
+      evidence:['25+ bills passed cumulatively','30,000+ people brought home through bipartisan reform'],
+      audience:['Foundations','Media','Board Members'],
+    },
+    {
+      id:'climate-funding',
+      title:'Equitable climate funding',
+      sentiment:'Systemic Change',
+      desc:'Underserved communities receive historic investments for better health and good jobs after successful advocacy secures $18 billion in federal climate funds.',
+      evidence:['$18 billion in federal climate funds allocated to underserved communities','Assisted 200 community organizations in 2024'],
+      audience:['Foundations','Corporate Partners','Media'],
+    },
+    {
+      id:'climate-tech',
+      title:'Diversity in climate tech',
+      sentiment:'Innovation',
+      desc:'Black and LatinX professionals break into the tech industry and drive innovation, supported by our 650 annual scholarships.',
+      evidence:['650 scholarships awarded in 2024 to upskill Black and LatinX talent','Partnerships with GitLab Foundation and Village Capital'],
+      audience:['Corporate Partners','Prospective Participants','Social Media'],
+    },
+    {
+      id:'coalition',
+      title:'Coalition building for economic opportunity',
+      sentiment:'Possibility',
+      desc:'By uniting unlikely allies across the political spectrum, we create massive economic opportunities and facilitate billions in green banking awards.',
+      evidence:['$5 billion award facilitated for National Green Bank','25+ bills passed cumulatively','Assisted 200 community organizations in 2024'],
+      audience:['Donors','Board Members','Foundations'],
+    },
+    {
+      id:'advocacy',
+      title:'Justice-impacted advocacy leadership',
+      sentiment:'Aspiration',
+      desc:'Formerly incarcerated individuals become trained leaders advocating for fewer prisons, leveraging their lived experience to pass impactful legislation.',
+      evidence:['30,000+ people brought home from prison','25+ bills passed cumulatively'],
+      audience:['Donors','Prospective Participants','Social Media'],
+    },
+  ];
+  const chosen = N.find(x => x.id === S.narrative);
+  const withoutYou = {
+    reentry:          'Without this work, 30,000+ people would have no pathway from prison to a green-economy career.',
+    legislative:      'Without this work, the same broken system keeps producing the same outcomes — more incarceration, less opportunity.',
+    'climate-funding':'Without this work, underserved communities miss out on historic federal climate investments entirely.',
+    'climate-tech':   'Without this work, Black and LatinX talent is locked out of the fastest-growing industry in the country.',
+    coalition:        'Without this work, billions in green banking awards never reach the communities that need them most.',
+    advocacy:         'Without this work, the people closest to the problem have no seat at the table to fix it.',
+  }[S.narrative] || 'Without this work, the communities who need change the most continue to be overlooked.';
+
+
+  return wrap(
+    topBar('Narrative', 'Step 1 of 6 · Pick the story you want PosterChild to amplify'),
+    `
+    ${stepper()}
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+      <div class="card" style="padding:24px;">
+        <div style="font-size:16px;font-weight:800;margin-bottom:4px;">Here’s the story we think you’re telling</div>
+        <div style="font-size:13px;color:#6B7280;line-height:1.6;margin-bottom:18px;">Choose the narrative you want to lead with. We’ll tune writing, visuals, and fundraising prompts around it.</div>
+
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+          ${N.map(x => {
+            const on = S.narrative === x.id;
+            const sc = SENTIMENT_COLORS[x.sentiment] || { bg:'#F9FAFB', text:'#6B7280', border:'#E5E7EB' };
+            return `
+              <div class="card" onclick="pickNarrative('${x.id}')" style="padding:16px;cursor:pointer;border:${on?'2px solid #F5B700':'1px solid #E5E7EB'};background:${on?'#FFFDF5':'#fff'};">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">
+                  <div style="font-size:14px;font-weight:900;color:#111;line-height:1.3;flex:1;">${x.title}</div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+                    <span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:99px;background:${sc.bg};color:${sc.text};border:1px solid ${sc.border};white-space:nowrap;">${x.sentiment}</span>
+                    ${on?`<div style="width:18px;height:18px;border-radius:50%;background:#F5B700;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#111;">✓</div>`:`<div style="width:18px;height:18px;border-radius:50%;border:2px solid #E5E7EB;"></div>`}
+                  </div>
+                </div>
+                <div style="font-size:12px;color:#6B7280;line-height:1.6;margin-bottom:10px;">${x.desc}</div>
+                <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:5px;">Evidence</div>
+                <ul style="margin:0 0 10px 0;padding-left:14px;font-size:12px;color:#374151;line-height:1.7;">
+                  ${x.evidence.map(e=>`<li>${e}</li>`).join('')}
+                </ul>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                  ${x.audience.map(a=>`<span style="font-size:11px;padding:2px 8px;border-radius:99px;background:#F3F4F6;border:1px solid #E5E7EB;color:#6B7280;">${a}</span>`).join('')}
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:16px;padding-top:16px;border-top:1px solid #F3F4F6;">
+          <button onclick="go('funders')" class="btn-yellow" style="padding:10px 22px;" ${S.narrative ? '' : 'disabled'}>
+            Continue →
+          </button>
+        </div>
+        ${!S.narrative ? `<div style="font-size:11px;color:#9CA3AF;margin-top:10px;">Pick one narrative to continue.</div>` : ''}
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">What we already know</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${[
+              ['Brand kit', 'Colors, fonts, logo (auto-applied)'],
+              ['Mission + programs', 'Pulled from your site + intake'],
+              ['Testimonials', 'Auto-collected from community sources'],
+              ['Funding universe', 'Funders + deadlines + relationship signals'],
+            ].map(([t,d])=>`
+              <div style="padding:10px 12px;border:1px solid #E5E7EB;border-radius:10px;background:#fff;">
+                <div style="font-size:12px;font-weight:900;color:#111;">${t}</div>
+                <div style="font-size:12px;color:#6B7280;margin-top:3px;line-height:1.5;">${d}</div>
+              </div>`).join('')}
+          </div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">The world without you</div>
+          <div style="font-size:14px;color:#374151;line-height:1.7;">${withoutYou}</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">Your mission</div>
+          <div style="font-size:14px;font-weight:800;color:#111;line-height:1.5;">${ORG.mission}</div>
+          <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
+            ${(ORG.programs||[]).slice(0,6).map(p=>`<span style="font-size:11px;background:#F3F4F6;border:1px solid #E5E7EB;border-radius:99px;padding:4px 10px;color:#6B7280;">${p}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`
+  );
+}
+
+function screenTemplate() {
+  const recs = recommendedTplIds();
+  const sel = S.template ? TEMPLATES.find(t=>t.id===S.template) : null;
+  const brandPrimary = ORG.brandPrimary || '#1B2459';
+  const brandAccent = ORG.brandAccent || '#F5B700';
+  const mission = ORG.mission || 'Our mission powers every story we publish.';
+  const testimonial = (ORG.testimonials && ORG.testimonials[0]) ? ORG.testimonials[0] : 'A real testimonial goes here.';
+  const narrativeLabel = S.narrative ? (S.narrative[0].toUpperCase() + S.narrative.slice(1)) : '—';
+  const stylePreview = `
+    <div style="border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 14px 12px;background:linear-gradient(135deg,${brandPrimary},#0F172A);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:rgba(255,255,255,.65);text-transform:uppercase;">Brand style · ${narrativeLabel} narrative</div>
+          <div style="font-size:10px;font-weight:800;background:rgba(245,183,0,.18);border:1px solid rgba(245,183,0,.35);color:#FDE68A;padding:2px 8px;border-radius:99px;">Auto‑styled</div>
+        </div>
+        <div style="margin-top:10px;font-size:14px;font-weight:800;color:#fff;line-height:1.35;">${mission}</div>
+      </div>
+      <div style="padding:12px 14px;background:#fff;">
+        <div style="background:#FFFBEB;border-left:3px solid ${brandAccent};padding:8px 10px;border-radius:0 6px 6px 0;font-size:12px;font-style:italic;color:#374151;line-height:1.5;">"${testimonial}"</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+          <div style="width:10px;height:10px;border-radius:3px;background:${brandAccent};"></div>
+          <div style="font-size:11px;color:#9CA3AF;">Brand kit applied · ${ORG.brandFonts}</div>
+        </div>
+      </div>
+    </div>`;
+  return wrap(
+    topBar('Brand Style', 'Step 2 of 6 · Pick the visual style that matches how you want your brand to show up'),
+    `
+    ${stepper()}
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;">
+      <div class="card" style="padding:24px;">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:8px;">
+          <div>
+            <div style="font-size:16px;font-weight:800;margin-bottom:4px;">Which style feels like you?</div>
+            <div style="font-size:13px;color:#6B7280;line-height:1.6;">We’re already applying your brand kit. Now choose the layout direction that best fits how you want your mission and community to show up.</div>
+          </div>
+          <div style="font-size:11px;color:#9CA3AF;white-space:nowrap;">Based on your narrative</div>
+        </div>
+        <div style="font-size:12px;color:#9CA3AF;margin-bottom:18px;">Highlighted templates are recommended for your selected narrative. You can pick any style.</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+          ${TEMPLATES.map(t => {
+            const isRec = recs.includes(t.id);
+            const isSel = S.template === t.id;
+            return `
+              <div class="tpl-card ${isSel?'selected':''}" onclick="pickTemplate('${t.id}')">
+                <div style="height:120px;overflow:hidden;position:relative;">
+                  ${t.preview}
+                  ${isRec?`<div style="position:absolute;top:7px;right:7px;background:#F5B700;color:#1a1a1a;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;">Match</div>`:''}
+                  ${isSel?`<div style="position:absolute;inset:0;background:rgba(245,183,0,.12);display:flex;align-items:center;justify-content:center;"><div style="background:#F5B700;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">✓</div></div>`:''}
+                </div>
+                <div style="padding:11px 13px;border-top:1px solid #F3F4F6;">
+                  <div style="font-size:13px;font-weight:700;margin-bottom:3px;">${t.name}</div>
+                  <div style="font-size:11px;color:#6B7280;line-height:1.5;">${t.desc}</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">
+                    ${t.tags.slice(0,3).map(tag=>`<span style="font-size:10px;padding:2px 7px;border-radius:4px;background:#F3F4F6;color:#9CA3AF;font-weight:500;">${tag}</span>`).join('')}
+                  </div>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">Your narrative</div>
+          <div style="font-size:15px;font-weight:800;color:#111;">${narrativeLabel}</div>
+          <div style="font-size:12px;color:#6B7280;margin-top:6px;line-height:1.6;">Mission: <strong>${ORG.mission}</strong></div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">Live Preview</div>
+          ${stylePreview}
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">${sel?'Selected Template':'No Template Yet'}</div>
+          ${sel ? `
+            <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${sel.name}</div>
+            <div style="font-size:12px;color:#6B7280;line-height:1.5;margin-bottom:12px;">${sel.desc}</div>
+            <div style="border-radius:8px;overflow:hidden;border:1px solid #E5E7EB;height:80px;">${sel.preview}</div>
+          ` : `<div style="font-size:13px;color:#9CA3AF;">Click a template to preview it here.</div>`}
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <button onclick="go('funders')" class="btn-outline" style="width:100%;justify-content:center;margin-bottom:8px;">← Back to funding universe</button>
+          <button ${!S.template?'disabled':''} onclick="go('logistics')" class="btn-yellow" style="width:100%;justify-content:center;padding:12px;">
+            Continue →
+          </button>
+        </div>
+      </div>
+    </div>`
+  );
+}
+
+// ── Smart field metadata ──────────────────────────────────────────────
+// source: 'found' = auto-detected from web | 'intake' = from discovery call | 'needed' = user must provide
+const SMART_FIELDS = {
+  brandKit:     { source:'needed', sourceLabel:'Needs your link',           icon:'🔗', why:'We\'ll automatically match your colors, fonts, and logo across every story — no manual styling needed.' },
+  contentVault: { source:'needed', sourceLabel:'Needs your link',           icon:'📁', why:'We\'ll surface your best assets at exactly the right moment when you\'re building a story.' },
+  website:      { source:'found',  sourceLabel:'Detected from your domain', icon:'🌐', why:'We\'ll mirror your digital presence so your PosterChild page feels like a natural extension of your brand.' },
+  instagram:    { source:'found',  sourceLabel:'Found on hopeharbor.org',   icon:'📸', why:'We\'ll match your visual style and cadence so every story lands consistently across channels.' },
+  teamMembers:  { source:'intake', sourceLabel:'From your discovery call',  icon:'👥', why:'We\'ll set up their dashboard access so your team is ready to publish from day one — no onboarding friction.' },
+  fundingLead:  { source:'intake', sourceLabel:'From your discovery call',  icon:'💼', why:'We\'ll tailor the funding board view to their reporting needs so they always have what they need for donor meetings.' },
+  techLead:     { source:'needed', sourceLabel:'Needs your input',          icon:'📲', why:'We\'ll send them a personalized distribution guide so content gets posted without any back-and-forth.' },
+  anchorFunders:{ source:'intake', sourceLabel:'From your discovery call',  icon:'🏦', why:'We\'ll study what makes these funders give and build that intelligence directly into your story angles.' },
+  dreamFunder:  { source:'intake', sourceLabel:'You mentioned this on your call', icon:'⭐', why:'We\'ll analyze their giving patterns and help you craft stories that speak directly to their priorities.' },
+  similarOrgs:  { source:'needed', sourceLabel:'Needs your input',          icon:'🔍', why:'We\'ll benchmark your storytelling against theirs and surface content gaps you can own.' },
+};
+
+function sourceChip(key) {
+  const m = SMART_FIELDS[key];
+  if (!m) return '';
+  const styles = {
+    found:  'background:#DCFCE7;color:#15803D;',
+    intake: 'background:#FFF8DC;color:#92400E;',
+    needed: 'background:#F1F5F9;color:#64748B;',
+  };
+  const icons = { found:'✦ ', intake:'✦ ', needed:'' };
+  return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;${styles[m.source]}">${icons[m.source]}${m.sourceLabel}</span>`;
+}
+
+function smartField(f) {
+  const meta = SMART_FIELDS[f.k] || {};
+  const isFound = meta.source === 'found' || meta.source === 'intake';
+  const borderColor = isFound ? '#F5B700' : '#E5E7EB';
+  const bgColor = isFound ? '#FFFDF5' : '#fff';
+
+  const inputEl = f.multi
+    ? `<textarea style="width:100%;border:1.5px solid ${borderColor};border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;min-height:72px;resize:vertical;color:#111;background:${bgColor};" onblur="ORG['${f.k}']=this.value">${ORG[f.k]}</textarea>`
+    : `<input style="width:100%;border:1.5px solid ${borderColor};border-radius:8px;padding:10px 12px;font-size:13px;color:#111;background:${bgColor};" value="${ORG[f.k]}" placeholder="${f.ph||''}" onblur="ORG['${f.k}']=this.value" />`;
+
+  return `
+    <div style="margin-bottom:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <label style="font-size:13px;font-weight:600;color:#374151;">${meta.icon||''} ${f.label}</label>
+        ${sourceChip(f.k)}
+      </div>
+      ${inputEl}
+      ${meta.why ? `
+      <div style="display:flex;align-items:flex-start;gap:7px;margin-top:7px;padding:8px 11px;background:#F9FAFB;border-radius:7px;border:1px solid #F1F5F9;">
+        <span style="color:#F5B700;font-size:12px;flex-shrink:0;margin-top:1px;">✦</span>
+        <span style="font-size:12px;color:#6B7280;line-height:1.5;">${meta.why}</span>
+      </div>` : ''}
+    </div>`;
+}
+
+function screenLogistics() {
+  const idx = Math.min(Math.max(Number(S.formStep) || 0, 0), FORM_STEPS.length - 1);
+  if (idx !== S.formStep) S.formStep = idx;
+  const step = FORM_STEPS[idx] || { title:'Confirm Details', hint:'', fields:[] };
+  const pct = ((idx + 1) / FORM_STEPS.length) * 100;
+  const sel = S.template ? TEMPLATES.find(t=>t.id===S.template) : null;
+
+  // Count how many fields on this step are pre-filled
+  const fields = Array.isArray(step.fields) ? step.fields : [];
+  const preFilledCount = idx < 4
+    ? fields.filter(f => SMART_FIELDS[f.k]?.source !== 'needed').length
+    : 0;
+  const totalFields = fields.length;
+
+  const stepBanner = idx < 4 && preFilledCount > 0 ? `
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:#FFFDF0;border:1.5px solid #F5B700;border-radius:9px;margin-bottom:20px;">
+      <span style="font-size:16px;">✦</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#92400E;">We already pulled ${preFilledCount} of ${totalFields} ${preFilledCount===1?'field':'fields'} for you</div>
+        <div style="font-size:12px;color:#B45309;margin-top:1px;">Review what we found and fill in any missing pieces. Everything can be updated later.</div>
+      </div>
+    </div>` : idx < 4 ? `
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:9px;margin-bottom:20px;">
+      <span style="font-size:15px;">💡</span>
+      <div style="font-size:12px;color:#6B7280;line-height:1.5;">We weren't able to auto-detect these — paste your links below. Each one unlocks a specific platform capability.</div>
+    </div>` : '';
+
+  const fieldHtml = idx < 4
+    ? fields.map(f => smartField(f)).join('')
+    : `
+      <div style="text-align:center;padding:10px 0 6px;">
+        <div style="font-size:32px;margin-bottom:12px;">🗓️</div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:6px;">You're all set — pick a time</div>
+        <div style="font-size:13px;color:#6B7280;margin-bottom:6px;">Your dashboard will be personalized and ready before the call.</div>
+        <div style="font-size:12px;color:#9CA3AF;margin-bottom:20px;">We'll use this time to walk through your first story together and hit Publish live.</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:420px;margin:0 auto;">
+          ${['Tue, Apr 22<br>11:00 AM','Wed, Apr 23<br>2:30 PM','Thu, Apr 24<br>10:00 AM'].map(s=>`
+            <button onclick="this.style.background='#F5B700';this.style.borderColor='#F5B700';this.style.fontWeight='700';document.querySelectorAll('.slot-btn').forEach(b=>{if(b!==this){b.style.background='#fff';b.style.borderColor='#E5E7EB';b.style.fontWeight='400'}});"
+              class="slot-btn"
+              style="border:1.5px solid #E5E7EB;background:#fff;border-radius:10px;padding:14px 10px;font-size:13px;cursor:pointer;line-height:1.5;transition:all .15s;">${s}</button>`).join('')}
+        </div>
+        <div style="margin-top:16px;font-size:12px;color:#9CA3AF;">Tue–Thu availability · 45 min · Video call</div>
+      </div>`;
+
+  // Sidebar summary cards
+  const legendItems = [
+    { color:'#DCFCE7', text:'#15803D', label:'Auto-detected from your website' },
+    { color:'#FFF8DC', text:'#92400E', label:'Pulled from your discovery call' },
+    { color:'#F1F5F9', text:'#64748B', label:'Needs your input' },
+  ];
+
+  return wrap(
+    topBar('Confirm Details', `Step 4 of 6 · ${step.hint}`),
+    `
+    ${stepper()}
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;">
+      <div class="card" style="padding:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div style="font-size:17px;font-weight:700;">${step.title}</div>
+          <div style="font-size:12px;color:#9CA3AF;font-weight:500;">${S.formStep+1} / ${FORM_STEPS.length}</div>
+        </div>
+        <div style="height:3px;background:#F3F4F6;border-radius:99px;margin-bottom:20px;overflow:hidden;">
+          <div style="height:100%;background:#F5B700;border-radius:99px;transition:width .3s;width:${pct}%"></div>
+        </div>
+        ${stepBanner}
+        ${fieldHtml}
+        <div style="display:flex;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:1px solid #F3F4F6;">
+          <button onclick="${S.formStep===0?`go('template')`:`advForm(${S.formStep-1})`}" class="btn-outline">← Back</button>
+          <button onclick="${S.formStep<FORM_STEPS.length-1?`advForm(${S.formStep+1})`:`go('forge')`}" class="btn-yellow" style="padding:10px 22px;">
+            ${S.formStep<FORM_STEPS.length-1?'Confirm & Continue →':'Continue to first story →'}
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <!-- Org context -->
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:8px;">Organization</div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px;">${ORG.name}</div>
+          <div style="margin-top:4px;">
+            ${S.narrative ? `<span class="ethos-tag on ethos-tag--display">${S.narrative[0].toUpperCase()+S.narrative.slice(1)}</span>` : '<span style="font-size:13px;color:#9CA3AF;">—</span>'}
+          </div>
+        </div>
+
+        <!-- Data source legend -->
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">Data Sources</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            ${legendItems.map(l=>`
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="width:10px;height:10px;border-radius:50%;background:${l.color};border:1px solid rgba(0,0,0,.08);flex-shrink:0;"></span>
+                <span style="font-size:12px;color:#6B7280;">${l.label}</span>
+              </div>`).join('')}
+          </div>
+        </div>
+
+        ${sel?`
+        <!-- Active template -->
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:8px;">Active Template</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:8px;">${sel.name}</div>
+          <div style="border-radius:8px;overflow:hidden;border:1px solid #E5E7EB;height:68px;">${sel.preview}</div>
+        </div>`:''}
+
+        <!-- Step progress mini-list -->
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">Setup Progress</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${FORM_STEPS.slice(0,4).map((st,i)=>`
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:${i<S.formStep?'#374151':i===S.formStep?'#111':'#9CA3AF'};">
+                <span style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;background:${i<S.formStep?'#F5B700':i===S.formStep?'#FFF8DC':'#F3F4F6'};color:${i<S.formStep?'#1a1a1a':i===S.formStep?'#92400E':'#9CA3AF'};border:1.5px solid ${i===S.formStep?'#F5B700':'transparent'};">
+                  ${i<S.formStep?'✓':i+1}
+                </span>
+                <span style="font-weight:${i===S.formStep?700:400};">${st.title}</span>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`
+  );
+}
+
+function screenFunders() {
+  const sel = S.template ? TEMPLATES.find(t=>t.id===S.template) : null;
+  const total = 20000000;
+  const formatted = '$' + (total/1000000).toFixed(0) + 'M';
+  const CATS = [
+    { id:'foundations', name:'Foundations', desc:'Invite + relationship based', pct:36 },
+    { id:'grants',      name:'Grants',      desc:'Applications + deadlines',   pct:28 },
+    { id:'individuals', name:'Individuals', desc:'Major donors + community',   pct:22 },
+    { id:'other',       name:'Other',       desc:'Corporate + government',     pct:14 },
+  ];
+  const picked = !!S.fundingFocus;
+
+  const catCard = (c) => {
+    const on = S.fundingFocus === c.id;
+    return `
+      <div class="card" onclick="pickFundingFocus('${c.id}')" style="padding:14px 14px 13px;cursor:pointer;border:${on?'1.5px solid #F5B700':'1px solid #E5E7EB'};background:${on?'#FFFDF5':'#fff'};">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+          <div style="min-width:0;">
+            <div style="font-size:14px;font-weight:900;color:#111;line-height:1.25;">${c.name}</div>
+            <div style="font-size:12px;color:#6B7280;margin-top:4px;line-height:1.5;">${c.desc}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+            <div style="font-size:11px;font-weight:900;color:#92400E;background:#FFF8DC;border:1px solid #FDE68A;padding:2px 8px;border-radius:99px;">${c.pct}%</div>
+            ${on?`<div style="width:18px;height:18px;border-radius:50%;background:#F5B700;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#111;">✓</div>`:`<div style="width:18px;height:18px;border-radius:50%;border:2px solid #E5E7EB;"></div>`}
+          </div>
+        </div>
+        <div style="margin-top:10px;height:6px;background:#F3F4F6;border-radius:99px;overflow:hidden;">
+          <div style="height:100%;width:${c.pct}%;background:linear-gradient(90deg,#F5B700,#F59E0B);border-radius:99px;"></div>
+        </div>
+      </div>`;
+  };
+
+  return wrap(
+    topBar('Funding Universe', 'Step 3 of 6 · We pulled your funding landscape — now tell us where you want help'),
+    `
+    ${stepper()}
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+      <div class="card" style="padding:24px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px;">
+          <div>
+            <div style="font-size:16px;font-weight:900;margin-bottom:4px;">We found ${formatted} in funding for you (so far)</div>
+            <div style="font-size:13px;color:#6B7280;line-height:1.6;">This is a live map — it updates as we discover new funders, deadlines, and relationship signals.</div>
+          </div>
+          <div style="padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,#F5B700,#F59E0B);color:#111;min-width:136px;text-align:center;">
+            <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75;">Found</div>
+            <div style="font-size:22px;font-weight:900;line-height:1.1;margin-top:2px;">${formatted}</div>
+            <div style="font-size:11px;font-weight:700;opacity:.7;margin-top:3px;">Opportunity</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+          ${[
+            ['Top signals', `Website + social + peers (${ORG.similarOrgs.split(',')[0] || 'similar orgs'})`],
+            ['Most common asks', 'General operating, program growth, community partnerships'],
+            ['Your current anchors', ORG.anchorFunders],
+          ].map(([k,v])=>`
+            <div style="flex:1;min-width:210px;border:1px solid #E5E7EB;border-radius:10px;background:#FAFAFA;padding:12px 14px;">
+              <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#9CA3AF;margin-bottom:6px;">${k}</div>
+              <div style="font-size:12px;color:#374151;line-height:1.55;">${v}</div>
+            </div>`).join('')}
+        </div>
+
+        <div style="font-size:13px;font-weight:900;margin:10px 0 10px;">What type of funding do you want the most help with?</div>
+        <div style="font-size:12px;color:#6B7280;margin-bottom:14px;line-height:1.6;">Pick 1. This tunes your fundraising board and the story prompts we prioritize.</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          ${CATS.map(catCard).join('')}
+        </div>
+
+        <div style="display:flex;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:1px solid #F3F4F6;">
+          <button onclick="go('narrative')" class="btn-outline">← Back</button>
+          <button type="button" onclick="advanceFromFunders()" class="btn-yellow" style="padding:10px 22px;" ${!picked?'disabled':''}>
+            Continue →
+          </button>
+        </div>
+        ${!picked ? `<div style="font-size:11px;color:#9CA3AF;margin-top:10px;">Choose 1 category to continue.</div>` : ''}
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">What you just unlocked</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${[
+              ['Sharper story angles', 'Your story prompts match what these funders actually fund.'],
+              ['Better “proof” cues', 'We suggest the kinds of metrics they care about.'],
+              ['More confident asks', 'We help you translate story → donor language.'],
+            ].map(([t,d])=>`
+              <div style="padding:10px 12px;border:1px solid #E5E7EB;border-radius:10px;background:#fff;">
+                <div style="font-size:12px;font-weight:800;color:#111;">${t}</div>
+                <div style="font-size:12px;color:#6B7280;margin-top:3px;line-height:1.5;">${d}</div>
+              </div>`).join('')}
+          </div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:8px;">Context</div>
+          <div style="font-size:14px;font-weight:800;margin-bottom:6px;">${ORG.name}</div>
+          <div style="font-size:12px;color:#6B7280;line-height:1.6;">Narrative: <strong>${S.narrative || '—'}</strong></div>
+          ${sel ? `<div style="font-size:12px;color:#6B7280;line-height:1.6;margin-top:4px;">Template: <strong>${sel.name}</strong></div>` : ''}
+          <div style="margin-top:10px;font-size:12px;color:#6B7280;line-height:1.6;">Funding focus: <strong>${S.fundingFocus || '—'}</strong></div>
+        </div>
+      </div>
+    </div>`
+  );
+}
+
+function forgeGoalLine(n, text, done) {
+  return `
+    <div style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:${done?'#065F46':'#374151'};background:${done?'#ECFDF5':'#F9FAFB'};border:1px solid ${done?'#6EE7B7':'#E5E7EB'};border-radius:8px;padding:10px 12px;">
+      <div style="width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:${done?'#22C55E':'#fff'};color:${done?'#fff':'#6B7280'};border:2px solid ${done?'#22C55E':'#E5E7EB'};">${done ? '✓' : n}</div>
+      <div style="line-height:1.45;padding-top:1px;">${text}</div>
+    </div>`;
+}
+
+function screenForge() {
+  ensureForgeBaseline();
+  const sel = S.template ? TEMPLATES.find(t=>t.id===S.template) : null;
+  const g1 = S.forgeGoalBody;
+  const g2 = S.forgeGoalImage;
+  const g3 = S.forgeGoalQuote;
+  const canPublish = g1 && g2 && g3;
+
+  const imageZone = S.forgeGoalImage
+    ? `<div style="border:2px solid #22C55E;border-radius:8px;min-height:110px;background:#ECFDF5;cursor:default;">
+        <div style="display:flex;gap:12px;align-items:center;padding:14px 16px;">
+          <div style="width:76px;height:76px;border-radius:10px;flex-shrink:0;background:linear-gradient(145deg,#86EFAC,#22C55E);display:flex;align-items:center;justify-content:center;font-size:28px;">🌿</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#065F46;">Photo attached</div>
+            <div style="font-size:12px;color:#047857;margin-top:3px;">Community garden · from content vault</div>
+            <div style="font-size:11px;color:#6EE7B7;margin-top:6px;">✓ Goal 3 complete</div>
+          </div>
+        </div>
+      </div>`
+    : `<div role="button" tabindex="0" onclick="forgeAddImage()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();forgeAddImage();}"
+        style="border:2px dashed #E5E7EB;border-radius:8px;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#FAFAFA;cursor:pointer;gap:5px;transition:background .15s,border-color .15s;"
+        onmouseover="this.style.background='#FFFDF5';this.style.borderColor='#F5B700';" onmouseout="this.style.background='#FAFAFA';this.style.borderColor='#E5E7EB';">
+        <div style="font-size:22px;">📷</div>
+        <div style="font-size:12px;color:#9CA3AF;">Click to add from vault</div>
+        <div style="font-size:11px;color:#D1D5DB;">Community garden photo</div>
+      </div>`;
+
+  return wrap(
+    topBar('First Story', 'Step 5 of 6 · Edit your draft story, then publish it live'),
+    `
+    ${stepper()}
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+      <div class="card" style="padding:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <div>
+            <div style="font-size:16px;font-weight:700;">Your Draft Story</div>
+            <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">${canPublish ? 'All goals done — you can publish.' : 'Complete Today’s Goal checklist on the right to unlock Publish.'}</div>
+          </div>
+          <button onclick="doPublish()" class="btn-yellow" style="padding:10px 20px;" ${canPublish ? '' : 'disabled'}>🚀 Publish Story</button>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Story Title</label>
+          <input style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 14px;font-size:15px;font-weight:600;color:#111;" value="${STORY.title.replace(/"/g,'&quot;')}" oninput="forgeTitleInput(this)" />
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Story Body</label>
+          <textarea style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:12px 14px;font-size:13px;color:#374151;line-height:1.7;min-height:160px;resize:vertical;font-family:inherit;" oninput="forgeBodyInput(this)">${STORY.body.replace(/</g,'&lt;')}</textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Quote Block</label>
+            <textarea style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 14px;font-size:13px;color:#374151;line-height:1.6;min-height:110px;resize:none;font-family:inherit;font-style:italic;" oninput="forgeQuoteInput(this)">${STORY.quote.replace(/</g,'&lt;')}</textarea>
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Image Asset</label>
+            ${imageZone}
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card" style="padding:18px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:12px;">Today's Goal</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            ${forgeGoalLine(1, 'Edit one sentence in the story body', g1)}
+            ${forgeGoalLine(2, 'Add one authentic quote, then publish', g3)}
+            ${forgeGoalLine(3, 'Add one image from your content vault', g2)}
+          </div>
+        </div>
+
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;padding:14px 16px 8px;">Preview Card</div>
+          ${g2 ? `<div style="height:64px;background:linear-gradient(135deg,#DCFCE7,#BBF7D0);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#166534;">📷 Photo attached</div>` : (sel ? `<div style="height:75px;overflow:hidden;">${sel.preview}</div>` : `<div style="height:75px;background:linear-gradient(135deg,#1B2459,#0F172A);"></div>`)}
+          <div style="padding:14px 16px;">
+            <div style="font-size:13px;font-weight:700;line-height:1.4;margin-bottom:6px;">${STORY.title}</div>
+            <div style="font-size:12px;color:#6B7280;line-height:1.5;">${STORY.body.slice(0,120)}...</div>
+            <div style="background:#FFFBEB;border-left:3px solid #F5B700;padding:8px 10px;margin-top:10px;border-radius:0 6px 6px 0;font-size:12px;font-style:italic;color:#374151;">"${STORY.quote.replace(/</g,'&lt;')}"</div>
+          </div>
+        </div>
+      </div>
+    </div>`
+  );
+}
+
+function screenCelebration() {
+  return sidebar() + `
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#111827;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:80px;left:120px;width:200px;height:200px;background:#F5B700;border-radius:50%;opacity:.12;filter:blur(60px);"></div>
+      <div style="position:absolute;top:60px;right:80px;width:240px;height:240px;background:#EC4899;border-radius:50%;opacity:.1;filter:blur(80px);"></div>
+      <div style="position:absolute;bottom:80px;left:40%;width:180px;height:180px;background:#38BDF8;border-radius:50%;opacity:.1;filter:blur(70px);"></div>
+      <div style="text-align:center;max-width:560px;padding:32px;position:relative;">
+        <div style="display:inline-flex;background:rgba(255,255,255,.08);border-radius:99px;padding:6px 16px;font-size:12px;font-weight:600;color:rgba(255,255,255,.7);margin-bottom:20px;">✦ First Story Published</div>
+        <div style="font-size:56px;margin-bottom:16px;">🎉</div>
+        <div style="font-size:40px;font-weight:800;color:#fff;margin-bottom:14px;letter-spacing:-.5px;">You did it.</div>
+        <div style="font-size:16px;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:32px;">Your first story is live. This is the activation moment that proves the platform is working — and gives your whole team an immediate win to celebrate.</div>
+        <div style="display:flex;gap:12px;justify-content:center;">
+          <button onclick="goToDashboardFromCelebration()" style="background:#F5B700;color:#111;font-weight:700;font-size:14px;padding:12px 28px;border-radius:10px;border:none;cursor:pointer;">Go to Dashboard →</button>
+          <button onclick="go('forge')" style="background:rgba(255,255,255,.1);color:#fff;font-weight:500;font-size:14px;padding:12px 24px;border-radius:10px;border:1px solid rgba(255,255,255,.15);cursor:pointer;">← Back to editor</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function screenDashboard() {
+  const mission = { title:'The Action Shot', desc:'Upload one real photo of your team in action — don\'t worry about lighting, just capture a moment.', action:'Upload Photo' };
+  const sel = S.template ? TEMPLATES.find(t=>t.id===S.template) : null;
+
+  return wrap(
+    topBar('Hey, Darien!', 'Welcome back. Your first story is live — keep the momentum going.'),
+    `
+    ${stepper()}
+
+    <!-- Activation banner -->
+    <div style="background:linear-gradient(135deg,#F5B700,#F59E0B);border-radius:12px;padding:16px 22px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#1a1a1a;">🎉 Activation complete! Your first story is live.</div>
+        <div style="font-size:12px;color:rgba(0,0,0,.55);margin-top:2px;">Complete your daily micro-mission to build the storytelling habit.</div>
+      </div>
+      <button onclick="go('forge')" style="background:#fff;color:#92400E;font-weight:700;font-size:12px;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;">View Story →</button>
+    </div>
+
+    <!-- Stats -->
+    <div style="font-size:15px;font-weight:700;margin-bottom:12px;">Overview</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
+      ${statCard(S.published?'1':'0','Posters Generated','+ this month')}
+      ${statCard('0','Contacts','— add your team')}
+      ${statCard(S.published?'1':'0','Stories Published','+ today')}
+      ${statCard('0','Brand Assets','— upload your kit')}
+    </div>
+
+    <!-- Micro mission -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      <div class="card" style="padding:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div>
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;">Micro-Mission</div>
+            <div style="font-size:17px;font-weight:700;margin-top:3px;">${mission.title}</div>
+          </div>
+          <span style="background:${S.missionDone?'#DCFCE7':'#FFF8DC'};color:${S.missionDone?'#15803D':'#92400E'};font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;">${S.missionDone?'✓ Done':'Pending'}</span>
+        </div>
+        <div style="font-size:13px;color:#6B7280;line-height:1.6;margin-bottom:16px;">${mission.desc}</div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="doMission()" class="btn-yellow" ${S.missionDone?'disabled':''}>✓ ${mission.action}</button>
+        </div>
+        ${S.missionDone?`<div style="background:#DCFCE7;border-radius:8px;padding:10px 14px;margin-top:14px;font-size:12px;font-weight:600;color:#15803D;">Task complete ✨ Small reward triggered.</div>`:''}
+      </div>
+      <div class="card" style="padding:20px;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:12px;">Suggested Stories</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          ${['A volunteer moment worth sharing','One quote that shows real trust','A metric that signals progress to funders'].map(i=>`<div style="font-size:13px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:7px;padding:9px 12px;color:#374151;">${i}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Story board -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;">Story Board</div>
+        <div style="font-size:12px;color:#9CA3AF;">Stories suggested for your social channels. Skip or mark as used.</div>
+      </div>
+      <button class="btn-outline" style="font-size:12px;">⬆ Upload Content</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      ${publishedStoryCard()}
+      ${storyCard('Families First: Navigating Uncertainty With Dignity','SUGGESTED','Amina Johnson',['Dignity','Support','Advocacy'],'linear-gradient(160deg,#14532D,#0F2417)')}
+      ${storyCard('The Numbers Behind 5 Years of Consistent Impact','SUGGESTED','Leah Morgan',['Data','Transparency','Funders'],'linear-gradient(160deg,#1E1B4B,#111827)')}
+    </div>`
+  );
+}
+
+function praiseSuggestion() {
+  if (S.narrative === 'economic' || S.narrative === 'policy')
+    return 'Excellent work on the solo update. Adding that detail makes the story feel grounded and credible. You are already building a stronger signal for future funders.';
+  if (S.narrative === 'bold')
+    return 'Yes. That update is strong and unmistakably on-brand. You are already taking ownership of your story in a way people will feel.';
+  return 'Look at you. Your first solo update is live, and it adds such a personal touch to the story you published. This is exactly how momentum starts.';
+}
+const PRAISE_VARIANTS = [
+  'Heartfelt / Human: Look at you! Your first solo update is live — that photo adds such a human layer. You are building something donors will feel.',
+  'Data-forward: Love the update — grounding the story in specifics makes your impact undeniable to funders.',
+  'Bold / movement: That update is fearless and on-brand. You are owning the narrative — keep going.',
+];
+function setPraiseVariant(i) {
+  const ta = document.getElementById('praise-ta');
+  if (ta) ta.value = PRAISE_VARIANTS[i - 1] || '';
+}
+
+// ── Jayla: Phase 3 — Prep dashboard ───────────────────────────────────
+function screenJaylaPrep() {
+  const sel = S.template ? TEMPLATES.find(t => t.id === S.template) : null;
+  return wrapJayla(
+    'Pre-kickoff prep',
+    'Phase 3 · ~10 min before the live call — review their story seed and brand ethos so the first screen is never blank.',
+    `
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#FFFDF0;border:1.5px solid #F5B700;border-radius:10px;margin-bottom:20px;">
+      <span style="font-size:18px;">🔔</span>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#92400E;">System alert · Kickoff with ${ORG.name.split(' ')[0]} in 24 hours</div>
+        <div style="font-size:12px;color:#B45309;margin-top:2px;">Spend ~10 minutes here so you walk into the Story Forge with a high-resolution draft.</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;">
+      <div class="card" style="padding:18px;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">Narrative</div>
+        <div style="margin-top:4px;">
+          ${S.narrative ? `<span class="ethos-tag on ethos-tag--display">${S.narrative[0].toUpperCase()+S.narrative.slice(1)}</span>` : '<span style="font-size:13px;color:#9CA3AF;">Not selected yet.</span>'}
+        </div>
+      </div>
+      <div class="card" style="padding:18px;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">Dream funder</div>
+        <div style="font-size:16px;font-weight:700;">${ORG.dreamFunder}</div>
+        <div style="font-size:12px;color:#6B7280;margin-top:6px;">Use this to tune story angles and suggested asks.</div>
+      </div>
+      <div class="card" style="padding:18px;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">Active template</div>
+        <div style="font-size:15px;font-weight:700;">${sel ? sel.name : '—'}</div>
+        ${sel ? `<div style="margin-top:10px;border-radius:8px;overflow:hidden;border:1px solid #E5E7EB;height:56px;">${sel.preview}</div>` : ''}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div class="card" style="padding:20px;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:8px;">Draft headline</div>
+        <div style="font-size:20px;font-weight:700;line-height:1.25;margin-bottom:12px;">${STORY.title}</div>
+        <div style="font-size:13px;color:#4B5563;line-height:1.65;">${STORY.body}</div>
+      </div>
+      <div class="card" style="padding:20px;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;margin-bottom:10px;">Recommended kickoff goals</div>
+        <ul style="margin:0;padding-left:18px;font-size:13px;color:#374151;line-height:1.85;">
+          <li>Edit one sentence to feel more on-brand for their ethos.</li>
+          <li>Pull one real image from their content vault into the story.</li>
+          <li>Add one authentic quote and have them click <strong>Publish</strong> live.</li>
+        </ul>
+        <div style="margin-top:16px;padding:12px;background:#F9FAFB;border-radius:8px;font-size:12px;color:#6B7280;border:1px solid #F3F4F6;">
+          <strong>Role:</strong> You are the navigator; the client shares their screen and drives the clicks.
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:16px 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+      <span style="font-size:13px;color:#6B7280;">When the call starts, open the client-facing Story Forge in a second tab.</span>
+      <button onclick="go('forge')" class="btn-yellow" style="padding:10px 18px;">Open Story Forge (client view) →</button>
+    </div>`
+  );
+}
+
+// ── Jayla: Phase 4 — Live Story Forge coach view ──────────────────────
+function screenJaylaLive() {
+  return wrapJayla(
+    'Live Story Forge — Coach view',
+    'Phase 4 · During the video call — guide three edits, then celebrate their first publish.',
+    `
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;">
+      <div class="card" style="padding:22px;">
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px;">Facilitated checklist</div>
+        <div style="font-size:13px;color:#6B7280;margin-bottom:18px;">Have them share their screen. You narrate; they execute.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${[
+            ['1', 'Headline pass', 'Tighten the title so it matches their voice and template.'],
+            ['2', 'Visual proof', 'Drop in one image from the vault — show donors something real.'],
+            ['3', 'Quote + Publish', 'Add the quote block you practiced, then count down to Publish together.'],
+          ].map(([n,t,d]) => `
+            <div style="display:flex;gap:14px;padding:14px 16px;background:#FFFBF5;border:1px solid #FDE68A;border-radius:10px;">
+              <div style="width:28px;height:28px;background:#F5B700;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#111;flex-shrink:0;">${n}</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;">${t}</div>
+                <div style="font-size:12px;color:#6B7280;margin-top:3px;line-height:1.5;">${d}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button onclick="go('forge')" class="btn-yellow">Open client Story Forge</button>
+          <button onclick="go('celebration')" class="btn-outline" ${!S.published?'disabled':''}>Preview celebration screen</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="card" style="padding:16px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:#9CA3AF;">Dopamine moment</div>
+          <div style="font-size:13px;color:#374151;margin-top:8px;line-height:1.55;">Right after Publish, full-screen confetti + “First story published” badge. Name the win out loud.</div>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:#9CA3AF;">Micro-mission homework</div>
+          <div style="font-size:13px;color:#374151;margin-top:8px;line-height:1.55;">Pick one: <strong>Action shot</strong>, <strong>Voice of impact</strong>, or <strong>Progress pulse</strong> — assign it before you hang up.</div>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:#9CA3AF;">Client status</div>
+          <div style="font-size:13px;margin-top:8px;">Published: <strong>${S.published ? 'Yes ✓' : 'Not yet'}</strong></div>
+          <div style="font-size:13px;margin-top:4px;">Micro-mission: <strong>${S.missionDone ? 'Done ✓' : 'Pending'}</strong></div>
+        </div>
+      </div>
+    </div>`
+  );
+}
+
+// ── Jayla: Alerts & nudges ─────────────────────────────────────────────
+function screenJaylaAlerts() {
+  const alerts = [
+    { t:'Pre-kickoff',     on: S.formStep >= 3,  msg:'Logistics almost complete — skim their content vault before tomorrow.' },
+    { t:'Kickoff',         on: S.formStep >= 3,  msg:'Kickoff window: Tue–Thu · Have Prep dashboard and Story Forge ready.' },
+    { t:'First publish',   on: S.published,      msg:ORG.name + ' just published their first story. Celebration moment delivered.' },
+    { t:'Micro-mission',   on: S.missionDone,    msg:ORG.name + ' completed their solo micro-mission. Open Praise queue.' },
+    { t:'Praise sent',     on: S.praiseSent,     msg:'You sent praise — habit loop closed for this cycle.' },
+  ];
+  return wrapJayla(
+    'Alerts & nudges',
+    'What Jayla sees in her notification stream during onboarding.',
+    `
+    <div class="card" style="padding:20px;margin-bottom:16px;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Inbox preview</div>
+      <div style="font-size:13px;color:#6B7280;">Automated + triggered alerts so nothing falls through the cracks.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      ${alerts.map(a => `
+        <div class="card" style="padding:14px 18px;display:flex;align-items:flex-start;gap:12px;opacity:${a.on?1:0.45};">
+          <div style="width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0;background:${a.on?'#22C55E':'#E5E7EB'};"></div>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.06em;">${a.t}</div>
+            <div style="font-size:13px;color:#374151;margin-top:4px;line-height:1.5;">${a.msg}</div>
+          </div>
+          ${a.t === 'Micro-mission' && a.on && !S.praiseSent ? `<button onclick="go('jayla-praise')" class="btn-outline-yellow" style="flex-shrink:0;">Open praise →</button>` : ''}
+        </div>`).join('')}
+    </div>`
+  );
+}
+
+// ── Jayla: Phase 6 — Praise queue ─────────────────────────────────────
+function screenJaylaPraise() {
+  const mission = 'The Action Shot';
+  const msg = praiseSuggestion();
+  const detected = S.narrative ? (S.narrative[0].toUpperCase() + S.narrative.slice(1) + ' narrative') : '—';
+  return wrapJayla(
+    'Praise queue',
+    'Phase 6 · Digitized praise — reinforce the habit with a personal high-five.',
+    `
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;">
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="display:grid;grid-template-columns:1fr 1.15fr;">
+          <div style="padding:22px;border-right:1px solid #E5E7EB;background:#FAFAFA;">
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:#9CA3AF;">Queue item</div>
+            <div style="font-size:20px;font-weight:700;margin-top:6px;">${ORG.name}</div>
+            <div style="margin-top:14px;padding:12px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;">
+              <strong>Completed:</strong> ${mission}
+            </div>
+            <div style="margin-top:10px;padding:12px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;">
+              <strong>Detected ethos:</strong> ${detected}
+            </div>
+            ${!S.missionDone ? `<div style="margin-top:12px;font-size:12px;color:#B45309;">Waiting on client to finish their micro-mission — queue will feel strongest once that’s true.</div>` : ''}
+          </div>
+          <div style="padding:22px;">
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:#9CA3AF;">Suggested message</div>
+            <p style="font-size:11px;color:#9CA3AF;margin-top:6px;margin-bottom:10px;">Tone auto-matched from their Brand Ethos. Edit before sending.</p>
+            <textarea id="praise-ta" style="width:100%;min-height:160px;border:1.5px solid #E5E7EB;border-radius:10px;padding:14px;font-size:14px;line-height:1.65;color:#374151;background:#fff;font-family:inherit;resize:vertical;">${msg.replace(/</g,'&lt;')}</textarea>
+            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+              <button onclick="doPraiseSend()" class="btn-yellow" ${S.praiseSent?'disabled':''}>Send praise</button>
+              <button onclick="go('dashboard')" class="btn-outline">View client dashboard</button>
+              <button onclick="go('jayla-alerts')" class="btn-outline">Back to alerts</button>
+            </div>
+            ${S.praiseSent ? `<div style="margin-top:14px;padding:12px 14px;background:#DCFCE7;border-radius:8px;font-size:13px;font-weight:600;color:#15803D;">Praise sent successfully · Client will see this in email + in-app.</div>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:18px;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:#9CA3AF;margin-bottom:8px;">Alternate tones</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button type="button" class="btn-outline" style="justify-content:flex-start;font-size:12px;text-align:left;" onclick="setPraiseVariant(1)">Heartfelt / Human</button>
+          <button type="button" class="btn-outline" style="justify-content:flex-start;font-size:12px;text-align:left;" onclick="setPraiseVariant(2)">Data-forward</button>
+          <button type="button" class="btn-outline" style="justify-content:flex-start;font-size:12px;text-align:left;" onclick="setPraiseVariant(3)">Bold / movement</button>
+        </div>
+        <div style="margin-top:16px;font-size:12px;color:#6B7280;line-height:1.6;">Why this matters: product activity becomes a personal reinforcement loop — confidence to come back solo.</div>
+      </div>
+    </div>`
+  );
+}
+
+// ── Pre-Boarding Sidebar ──────────────────────────────────────────────
+function preBoardingSidebar() {
+  const screenToStep = {
+    'upload-landing':0,'upload-progress':0,'upload-success':0,
+    'great-start':1,'pipeline-ready':2,'no-schedule':3,'booked':3,
+  };
+  const active = screenToStep[S.screen] ?? 0;
+  const steps = [
+    { icon:'📤', label:'Upload Materials',  desc:'Share what you have' },
+    { icon:'⚡', label:'AI Analysis',        desc:'We review your content' },
+    { icon:'🎯', label:'Your Pipeline',      desc:'Funders & matches' },
+    { icon:'📅', label:'Schedule Kickoff',   desc:'Meet with Jayla' },
+  ];
+  return `
+    <aside style="width:224px;flex-shrink:0;background:#fff;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;overflow-y:auto;z-index:10;">
+      <div style="padding:16px 14px 12px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;gap:8px;">
+        <div style="width:30px;height:30px;background:#F5B700;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#1a1a1a;">✦</div>
+        <span style="font-weight:800;font-size:15px;color:#111;">PosterChild</span>
+      </div>
+      <div style="padding:10px 14px 4px;">
+        <div style="font-size:12px;color:#9CA3AF;">Organization</div>
+        <div style="font-size:13px;font-weight:600;color:#111;margin-top:1px;">Hope Harbor Collective</div>
+      </div>
+      <div style="padding:8px 8px;flex:1;">
+        <div class="nav-section">Pre-Boarding</div>
+        ${steps.map((s,i) => {
+          const done = i < active;
+          const isActive = i === active;
+          return `
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:8px;margin-bottom:2px;background:${isActive?'#EEF2FF':'transparent'};">
+            <div style="width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${done?'#5B4FCF':isActive?'#5B4FCF':'#F3F4F6'};color:${done||isActive?'#fff':'#9CA3AF'};margin-top:1px;">${done?'✓':(i+1)}</div>
+            <div>
+              <div style="font-size:13px;font-weight:${isActive?'700':'500'};color:${isActive?'#5B4FCF':done?'#374151':'#9CA3AF'};">${s.label}</div>
+              <div style="font-size:11px;color:#9CA3AF;">${s.desc}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="padding:12px 14px;border-top:1px solid #F3F4F6;display:flex;align-items:center;gap:9px;">
+        <div style="width:30px;height:30px;background:#F5B700;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1a1a1a;flex-shrink:0;">LM</div>
+        <div style="min-width:0;">
+          <div style="font-size:12px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Leah Morgan</div>
+          <div style="font-size:11px;color:#9CA3AF;">leah@hopeharbor.org</div>
+        </div>
+        <div style="width:8px;height:8px;background:#22C55E;border-radius:50%;flex-shrink:0;margin-left:auto;"></div>
+      </div>
+    </aside>`;
+}
+
+function pbScreen(title, content) {
+  return `
+    <div style="display:flex;flex:1;width:100%;height:100vh;overflow:hidden;">
+      ${preBoardingSidebar()}
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#F8F7FF;">
+        <div style="background:#fff;border-bottom:1px solid #E5E7EB;padding:14px 36px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:11px;color:#9CA3AF;margin-bottom:1px;">Hope Harbor Collective · Pre-Boarding</div>
+            <div style="font-size:18px;font-weight:700;color:#111;">${title}</div>
+          </div>
+          <div style="font-size:12px;color:#6B7280;cursor:pointer;display:flex;align-items:center;gap:5px;">Need help? <span style="width:19px;height:19px;border-radius:50%;border:1.5px solid #D1D5DB;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">?</span></div>
+        </div>
+        <div style="flex:1;overflow-y:auto;overflow-x:hidden;">
+          <div style="width:100%;padding:28px 36px;box-sizing:border-box;">
+            ${content}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Screen 1: Landing / Upload ────────────────────────────────────────
+function screenUploadLanding() {
+  const folderSVG = `<svg width="200" height="160" viewBox="0 0 200 160" fill="none">
+    <rect x="20" y="60" width="130" height="85" rx="10" fill="#F5B700" opacity=".9"/>
+    <rect x="20" y="50" width="58" height="18" rx="6" fill="#E5A800"/>
+    <rect x="40" y="22" width="80" height="95" rx="7" fill="#E8E4FF" stroke="#C4BBFF" stroke-width="1.5" transform="rotate(-7 40 22)"/>
+    <rect x="55" y="16" width="80" height="95" rx="7" fill="#F0EDFF" stroke="#C4BBFF" stroke-width="1.5" transform="rotate(-2 55 16)"/>
+    <rect x="68" y="12" width="80" height="92" rx="7" fill="#fff" stroke="#DDD8FF" stroke-width="1.5"/>
+    <line x1="80" y1="34" x2="138" y2="34" stroke="#C4BBFF" stroke-width="2" stroke-linecap="round"/>
+    <line x1="80" y1="44" x2="132" y2="44" stroke="#E0DBFF" stroke-width="2" stroke-linecap="round"/>
+    <line x1="80" y1="54" x2="135" y2="54" stroke="#E0DBFF" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="88" cy="112" r="20" fill="#fff" stroke="#F5B700" stroke-width="2.5"/>
+    <path d="M81 112C81 107.5 84.5 104 88 104C91.5 104 95 107.5 95 112C95 114.5 93 116.5 91 117.5L88 120L85 117.5C83 116.5 81 114.5 81 112Z" fill="#F5B700"/>
+    <text x="6" y="58" font-size="18" fill="#F5B700" opacity=".8">+</text>
+    <text x="174" y="42" font-size="18" fill="#F5B700" opacity=".8">+</text>
+    <text x="162" y="110" font-size="13" fill="#C4BBFF">+</text>
+    <ellipse cx="30" cy="140" rx="14" ry="7" fill="#A8D5A2" opacity=".7"/>
+    <path d="M30 140 Q26 123 30 108 Q34 123 30 140Z" fill="#4CAF50" opacity=".5"/>
+    <path d="M30 122 Q40 114 46 117" stroke="#4CAF50" stroke-width="1.5" fill="none" opacity=".5"/>
+  </svg>`;
+
+  return pbScreen('Upload your materials', `
+    <div style="position:relative;">
+      <!-- Hero -->
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:16px;border:1px solid #E5E7EB;padding:28px 32px;margin-bottom:24px;gap:24px;">
+        <div style="max-width:440px;">
+          <h1 style="font-size:28px;font-weight:800;color:#111;line-height:1.2;margin:0 0 14px;">We've started<br>this for you</h1>
+          <p style="font-size:14px;color:#6B7280;line-height:1.65;margin:0 0 8px;">We've already begun pulling together funders and stories for your organization.</p>
+          <p style="font-size:14px;color:#6B7280;line-height:1.65;margin:0;">Adding a few materials will help us make this much stronger.</p>
+        </div>
+        <div style="flex-shrink:0;">${folderSVG}</div>
+      </div>
+
+      <!-- 2-col content -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;">
+        <!-- Left: material types -->
+        <div style="background:#fff;border-radius:12px;border:1px solid #E5E7EB;padding:24px;">
+          <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:4px;">Add materials that show your impact</div>
+          <div style="font-size:12px;color:#9CA3AF;margin-bottom:18px;">Upload whatever you already have. The most helpful materials include:</div>
+          ${[
+            { icon:'💬', label:'Testimonials or success stories', desc:'Quotes, case studies, community stories' },
+            { icon:'📊', label:'Impact reports or outcomes data', desc:'Annual reports, program results, metrics' },
+            { icon:'📋', label:'Surveys or community feedback', desc:'Community surveys, donor feedback' },
+            { icon:'🖼', label:'Photos or brand materials', desc:'Program photos, team photos, logo, colors' },
+          ].map(r => `
+            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+              <div style="width:34px;height:34px;background:#EEF2FF;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">${r.icon}</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#374151;">${r.label}</div>
+                <div style="font-size:12px;color:#9CA3AF;">${r.desc}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+
+        <!-- Right: upload zone -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <!-- Drop zone -->
+          <div style="background:#fff;border-radius:12px;border:2px dashed #C4BBFF;padding:28px;text-align:center;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;" onclick="startUpload()">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="margin-bottom:10px;"><circle cx="20" cy="20" r="19" stroke="#C4BBFF" stroke-width="1.5"/><path d="M20 26v-12M15 18l5-5 5 5" stroke="#5B4FCF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div style="font-size:14px;font-weight:600;color:#374151;margin-bottom:4px;">Drag &amp; drop files here</div>
+            <div style="font-size:13px;color:#374151;">or <span style="color:#5B4FCF;text-decoration:underline;">browse</span></div>
+            <div style="font-size:11px;color:#9CA3AF;margin-top:10px;line-height:1.6;">PDF, DOC, DOCX, PPT, XLS, CSV, JPG, PNG<br>(Max 100MB)</div>
+          </div>
+
+          <!-- OR divider -->
+          <div style="text-align:center;font-size:11px;font-weight:600;color:#9CA3AF;letter-spacing:.1em;">OR</div>
+
+          <!-- Drive/Dropbox -->
+          <div style="background:#fff;border-radius:12px;border:1px solid #E5E7EB;padding:18px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <div style="width:32px;height:32px;background:#EEF2FF;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔗</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#111;">Add a link to your Google Drive or Dropbox</div>
+                <div style="font-size:11px;color:#9CA3AF;">We'll pull what we can and keep your files secure.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" placeholder="Paste link here" style="flex:1;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-size:13px;color:#374151;background:#fff;"/>
+              <button onclick="startUpload()" style="background:#5B4FCF;color:#fff;font-weight:600;font-size:13px;padding:9px 16px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;">Add link</button>
+              <span style="font-size:22px;">🌐</span>
+              <span style="font-size:22px;">📦</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer callouts -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;">
+        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:22px;color:#16A34A;">✅</span>
+          <div style="font-size:13px;font-weight:700;color:#15803D;line-height:1.4;">Even 1 file is enough<br>to get started.</div>
+        </div>
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <div style="width:26px;height:26px;background:#F5B700;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#1a1a1a;flex-shrink:0;">✦</div>
+          <div style="font-size:13px;color:#92400E;line-height:1.4;">We'll review what you add and guide the next steps.</div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div style="display:flex;align-items:center;gap:20px;">
+        <button onclick="startUpload()" class="pb-btn-purple" style="max-width:320px;">Upload &amp; continue</button>
+        <span onclick="skipUpload()" style="font-size:13px;color:#9CA3AF;cursor:pointer;text-decoration:underline;">Skip for now</span>
+      </div>
+    </div></div>
+
+    ${S.showUploadModal ? `
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;">
+      <div class="pb-animate" style="background:#fff;border-radius:20px;border:1px solid #E5E7EB;padding:40px 48px;text-align:center;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="font-size:18px;font-weight:700;color:#374151;margin-bottom:6px;">Uploading your file...</div>
+        <div style="font-size:13px;color:#9CA3AF;margin-bottom:28px;">This usually takes just a few seconds.</div>
+        <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;text-align:left;margin-bottom:20px;">
+          <div style="width:42px;height:50px;background:#FEE2E2;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <span style="font-size:10px;font-weight:800;color:#DC2626;">PDF</span>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:9px;">2024_Impact_Report.pdf</div>
+            <div style="background:#E5E7EB;border-radius:99px;height:7px;overflow:hidden;">
+              <div class="progress-bar-animated" style="height:100%;background:linear-gradient(90deg,#5B4FCF,#7C6EF5);border-radius:99px;width:0%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:5px;">
+              <span style="font-size:11px;color:#9CA3AF;">2.4 MB</span>
+              <span style="font-size:11px;color:#5B4FCF;font-weight:600;">75%</span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#9CA3AF;">🔒 Your files are secure and private.</div>
+      </div>
+    </div>` : ''}
+
+    ${S.showUploadSuccess ? `
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;">
+      <div class="pb-animate" style="background:#fff;border-radius:20px;border:1px solid #E5E7EB;padding:48px 56px;text-align:center;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="width:72px;height:72px;background:#DCFCE7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:32px;">✓</div>
+        <h2 style="font-size:26px;font-weight:800;color:#111;margin:0 0 10px;">Uploaded successfully!</h2>
+        <p style="font-size:15px;color:#6B7280;margin:0 0 28px;line-height:1.6;">Thanks for sharing—this helps us understand your impact.</p>
+        <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;text-align:left;margin-bottom:32px;">
+          <div style="width:40px;height:48px;background:#FEE2E2;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <span style="font-size:9px;font-weight:800;color:#DC2626;">PDF</span>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;color:#374151;">2024_Impact_Report.pdf</div>
+            <div style="font-size:12px;color:#9CA3AF;">2.4 MB</div>
+          </div>
+          <span style="font-size:22px;color:#16A34A;">✓</span>
+        </div>
+        <button onclick="goFromUploadSuccess()" class="pb-btn-purple">Continue</button>
+      </div>
+    </div>` : ''}
+  `);
+}
+
+// ── Screen 2: Upload In Progress ──────────────────────────────────────
+function screenUploadProgress() {
+  return pbScreen('Uploading your materials', `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:300px;">
+      <div class="pb-animate" style="background:#fff;border-radius:16px;border:1px solid #E5E7EB;padding:48px 56px;text-align:center;width:100%;max-width:520px;">
+        <div style="font-size:20px;font-weight:700;color:#374151;margin-bottom:6px;">Uploading your file...</div>
+        <div style="font-size:14px;color:#9CA3AF;margin-bottom:32px;">This usually takes just a few seconds.</div>
+        <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:18px;text-align:left;margin-bottom:24px;display:flex;align-items:center;gap:14px;">
+          <div style="width:44px;height:52px;background:#FEE2E2;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <span style="font-size:10px;font-weight:800;color:#DC2626;">PDF</span>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;color:#374151;margin-bottom:10px;">2024_Impact_Report.pdf</div>
+            <div style="background:#E5E7EB;border-radius:99px;height:7px;overflow:hidden;">
+              <div class="progress-bar-animated" style="height:100%;background:linear-gradient(90deg,#5B4FCF,#7C6EF5);border-radius:99px;width:0%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;">
+              <span style="font-size:12px;color:#9CA3AF;">2.4 MB</span>
+              <span style="font-size:12px;color:#5B4FCF;font-weight:600;">75%</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;justify-content:center;font-size:13px;color:#9CA3AF;">
+          🔒 Your files are secure and private. We only use them to build your funding strategy.
+        </div>
+      </div>
+    </div>
+  `);
+}
+
+// ── Screen 3: Upload Success ──────────────────────────────────────────
+function screenUploadSuccess() {
+  return pbScreen('Upload complete', `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:300px;">
+      <div class="pb-animate" style="background:#fff;border-radius:16px;border:1px solid #E5E7EB;padding:48px 56px;text-align:center;width:100%;max-width:520px;">
+        <div style="width:72px;height:72px;background:#DCFCE7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:34px;">✓</div>
+        <h2 style="font-size:26px;font-weight:800;color:#111;margin:0 0 10px;">Uploaded successfully!</h2>
+        <p style="font-size:14px;color:#6B7280;margin:0 0 28px;line-height:1.6;">Thanks for sharing—this helps us understand your impact.</p>
+        <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;text-align:left;margin-bottom:32px;">
+          <div style="width:40px;height:48px;background:#FEE2E2;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <span style="font-size:9px;font-weight:800;color:#DC2626;">PDF</span>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;color:#374151;">2024_Impact_Report.pdf</div>
+            <div style="font-size:12px;color:#9CA3AF;">2.4 MB</div>
+          </div>
+          <span style="font-size:22px;color:#16A34A;">✓</span>
+        </div>
+        <button onclick="goFromUploadSuccess()" class="pb-btn-purple" style="max-width:280px;margin:0 auto;">Continue</button>
+      </div>
+    </div>
+  `);
+}
+
+// ── Screen 4: Great Start ─────────────────────────────────────────────
+function screenGreatStart() {
+  if (S.analysisPhase === 0) {
+    startAnalysisTimer();
+    const scanItems = [
+      { icon:'📄', label:'Reading 2024_Impact_Report.pdf' },
+      { icon:'🔍', label:'Scanning community channels & social presence' },
+      { icon:'💰', label:'Matching against 1,200+ active funders' },
+      { icon:'✦',  label:'Building your personalized pipeline' },
+    ];
+    return pbScreen('AI Analysis', `
+      <div style="max-width:620px;margin:0 auto;">
+        <div style="background:#fff;border-radius:16px;border:1px solid #E5E7EB;overflow:hidden;box-shadow:0 4px 24px rgba(91,79,207,.1);">
+          <div style="background:linear-gradient(135deg,#5B4FCF,#7C6EF5);padding:24px 28px;display:flex;align-items:center;gap:14px;">
+            <div style="width:44px;height:44px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;animation:spin 2s linear infinite;">⚡</div>
+            <div>
+              <div style="font-size:18px;font-weight:700;color:#fff;">Analyzing your materials...</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:2px;">This usually takes just a few seconds.</div>
+            </div>
+          </div>
+          <div style="height:4px;background:#EEF2FF;"><div style="height:100%;background:linear-gradient(90deg,#5B4FCF,#7C6EF5);animation:progress-full 4s ease-out forwards;width:0%;border-radius:0 2px 2px 0;"></div></div>
+          <div style="padding:8px 28px 20px;">
+            ${scanItems.map((item, i) => `
+              <div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:${i<3?'1px solid #F3F4F6':'none'};opacity:0;animation:item-appear .4s ease forwards;animation-delay:${0.4 + i * 0.85}s;">
+                <div style="width:32px;height:32px;background:#EEF2FF;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${item.icon}</div>
+                <span style="font-size:14px;color:#374151;flex:1;">${item.label}</span>
+                <span style="opacity:0;animation:check-pop .3s ease forwards;animation-delay:${0.85 + i * 0.85}s;color:#059669;font-size:16px;font-weight:700;">✓</span>
+              </div>`).join('')}
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:16px;font-size:13px;color:#9CA3AF;">Hang tight — we'll show you what we found in a moment.</div>
+      </div>
+    `);
+  }
+
+  return pbScreen('AI Analysis', `
+    <div style="max-width:640px;margin:0 auto;">
+      <div style="background:#fff;border-radius:16px;border:1px solid #E5E7EB;padding:28px 32px;margin-bottom:20px;display:flex;align-items:center;gap:24px;animation:result-rise .5s ease forwards;">
+        <div style="font-size:52px;flex-shrink:0;">✨</div>
+        <div>
+          <h1 style="font-size:24px;font-weight:800;color:#111;margin:0 0 6px;">This is a great start ✨</h1>
+          <p style="font-size:14px;color:#6B7280;line-height:1.6;margin:0;">We reviewed what you shared and built your funding strategy. Here's what we found.</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;">
+        ${[
+          { n:'80',     label:'Stories Found',    sub:'From your community', color:'#059669', bg:'#F0FDF4', border:'#D1FAE5', delay:'.1s' },
+          { n:'186',    label:'Funders Matched',  sub:'Active & aligned',    color:'#EA580C', bg:'#FFF7ED', border:'#FED7AA', delay:'.25s' },
+          { n:'$105M+', label:'Grant Potential',  sub:'Estimated total',     color:'#5B4FCF', bg:'#EEF2FF', border:'#C4B5FD', delay:'.4s' },
+        ].map(s => `
+          <div style="background:${s.bg};border:1.5px solid ${s.border};border-radius:12px;padding:18px 20px;opacity:0;animation:stat-count .5s ease forwards;animation-delay:${s.delay};">
+            <div style="font-size:28px;font-weight:800;color:${s.color};line-height:1;">${s.n}</div>
+            <div style="font-size:13px;font-weight:600;color:${s.color};margin-top:3px;">${s.label}</div>
+            <div style="font-size:11px;color:#9CA3AF;margin-top:2px;">${s.sub}</div>
+          </div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px;">
+        <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:12px;padding:20px;display:flex;gap:14px;opacity:0;animation:result-rise .5s ease forwards;animation-delay:.5s;">
+          <div style="width:40px;height:40px;background:#EEF2FF;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⚡</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:4px;">We're already building your full pipeline.</div>
+            <div style="font-size:12px;color:#9CA3AF;">Detailed matches will be ready at your kickoff call.</div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:12px;padding:20px;display:flex;gap:14px;opacity:0;animation:result-rise .5s ease forwards;animation-delay:.65s;">
+          <div style="width:40px;height:40px;background:#FFFBEB;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎯</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:4px;">Funders tailored to Hope Harbor Collective.</div>
+            <div style="font-size:12px;color:#9CA3AF;">Customized to your mission & impact.</div>
+          </div>
+        </div>
+      </div>
+      <button onclick="goFromGreatStart()" class="pb-btn-purple" style="max-width:320px;opacity:0;animation:result-rise .4s ease forwards;animation-delay:.8s;">Continue to your pipeline →</button>
+    </div>
+  `);
+}
+
+// ── Screen 5: Pipeline Ready (+ modal overlay) ────────────────────────
+function screenPipelineReady() {
+  return pbScreen('Your funding pipeline is ready 🎉', `
+    <div style="position:relative;">
+      <div class="pb-animate">
+        <!-- Unlock banner -->
+        <div style="background:linear-gradient(135deg,#5B4FCF,#7C6EF5);border-radius:12px;padding:18px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+          <div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.7);margin-bottom:4px;">Unlock More by Scheduling with Jayla</div>
+            <div style="font-size:16px;font-weight:700;color:#fff;">Schedule a walkthrough to get the most out of your pipeline.</div>
+          </div>
+          <button onclick="openScheduleModal()" style="background:#fff;color:#5B4FCF;font-weight:700;font-size:13px;padding:10px 20px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;">Schedule your walkthrough →</button>
+        </div>
+
+        <!-- 2-col cards -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+
+          <!-- Stories card -->
+          <div style="background:#F0FDF4;border-radius:16px;border:1px solid #D1FAE5;padding:24px;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:40px;height:40px;background:#D1FAE5;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;">👥</div>
+              <span style="font-size:36px;font-weight:800;color:#059669;line-height:1;">80</span>
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:3px;">Stories found</div>
+              <div style="font-size:13px;color:#6B7280;">From your community and social presence</div>
+            </div>
+            <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #E5E7EB;">
+              <p style="font-size:13px;color:#374151;line-height:1.65;font-style:italic;margin:0 0 14px;">"This program changed my life. I now have the confidence to pursue my dreams."</p>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;border-radius:50%;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#059669;">A</div>
+                <span style="font-size:12px;color:#6B7280;">– Community Member</span>
+              </div>
+            </div>
+            <span style="font-size:13px;font-weight:600;color:#059669;cursor:pointer;text-decoration:underline;">And 79 more stories</span>
+          </div>
+
+          <!-- Funders card -->
+          <div style="background:#FFF7ED;border-radius:16px;border:1px solid #FED7AA;padding:24px;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:40px;height:40px;background:#FED7AA;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;">💰</div>
+              <span style="font-size:36px;font-weight:800;color:#EA580C;line-height:1;">186</span>
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:3px;">Funders matched</div>
+              <div style="font-size:13px;color:#6B7280;">~$105M in potential funding</div>
+            </div>
+            <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #E5E7EB;">
+              <p style="font-size:13px;color:#374151;line-height:1.65;font-style:italic;margin:0 0 14px;">"Your work aligns perfectly with our mission to create lasting community impact."</p>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;border-radius:50%;background:#FED7AA;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#EA580C;">F</div>
+                <span style="font-size:12px;color:#6B7280;">– Family Impact Fund</span>
+              </div>
+            </div>
+            <span style="font-size:13px;font-weight:600;color:#EA580C;cursor:pointer;text-decoration:underline;">View all matched funders</span>
+          </div>
+
+        </div>
+
+        <div style="text-align:center;">
+          <span onclick="goToWorkspace()" style="font-size:13px;color:#9CA3AF;cursor:pointer;text-decoration:underline;">Go to my workspace first</span>
+        </div>
+      </div>
+
+      ${S.showScheduleModal ? scheduleModal() : ''}
+    </div>
+  `);
+}
+
+function scheduleModal() {
+  const dates = [
+    { day:'Tue', date:'May 27', id:'tue' },
+    { day:'Wed', date:'May 28', id:'wed' },
+    { day:'Thu', date:'May 29', id:'thu' },
+    { day:'Fri', date:'May 30', id:'fri' },
+  ];
+  const times = ['9:00 AM','11:00 AM','1:00 PM','3:00 PM'];
+  return `
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;">
+    <div class="pb-animate" style="background:#fff;border-radius:16px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;">
+      <div style="padding:20px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:#111;margin-bottom:3px;">Schedule time with Jayla</div>
+          <div style="font-size:12px;color:#9CA3AF;">Let's turn your impact into funding opportunities.</div>
+        </div>
+        <span onclick="closeScheduleModal()" style="font-size:18px;color:#9CA3AF;cursor:pointer;line-height:1;padding:2px 6px;">×</span>
+      </div>
+      <div style="padding:16px 24px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="width:42px;height:42px;background:#F5B700;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#1a1a1a;flex-shrink:0;">J</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#111;">Jayla</div>
+            <div style="font-size:12px;color:#9CA3AF;">Funding &amp; Story Strategist</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <span style="font-size:11px;background:#EEF2FF;color:#5B4FCF;padding:4px 10px;border-radius:99px;font-weight:600;">35 min</span>
+            <span style="font-size:11px;background:#E0F2FE;color:#0369A1;padding:4px 10px;border-radius:99px;font-weight:600;">Zoom</span>
+          </div>
+        </div>
+
+        <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:10px;">Choose a time that works for you</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;">
+          ${dates.map(d=>`
+            <button class="pb-date-btn ${S.selectedDate===d.id?'selected':''}" onclick="selectPBDate('${d.id}')">
+              <div style="font-size:11px;color:#9CA3AF;">${d.day}</div>
+              <div style="font-size:12px;font-weight:700;color:#374151;">${d.date}</div>
+            </button>`).join('')}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px;">
+          ${times.map(t=>`
+            <button class="pb-time-btn ${S.selectedTime===t?'selected':''}" onclick="selectPBTime('${t}')">${t}</button>`).join('')}
+        </div>
+        <button onclick="confirmMeeting()" class="pb-btn-purple" style="font-size:14px;" ${(!S.selectedDate||!S.selectedTime)?'disabled':''}>Confirm meeting</button>
+        <div style="text-align:center;margin-top:10px;">
+          <span onclick="closeScheduleModal()" style="font-size:13px;color:#9CA3AF;cursor:pointer;text-decoration:underline;">Close</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Screen 7: No Schedule ─────────────────────────────────────────────
+function screenNoSchedule() {
+  return pbScreen('Schedule Kickoff', `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:300px;">
+      <div class="pb-animate" style="background:#fff;border-radius:16px;border:1px solid #E5E7EB;padding:52px 56px;text-align:center;width:100%;max-width:520px;">
+        <div style="font-size:64px;margin-bottom:20px;">📅</div>
+        <h2 style="font-size:26px;font-weight:800;color:#111;margin:0 0 8px;">You can schedule anytime</h2>
+        <p style="font-size:15px;color:#6B7280;margin:0 0 28px;line-height:1.6;">—we'll continue working in the meantime.</p>
+        <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:18px 20px;margin-bottom:32px;text-align:left;">
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <span style="font-size:22px;">💬</span>
+            <div style="font-size:14px;color:#6B7280;line-height:1.65;">We'll review your materials and reach out if we have any questions.</div>
+          </div>
+        </div>
+        <button onclick="goToWorkspace()" class="pb-btn-purple" style="max-width:280px;margin:0 auto;">Go to my workspace</button>
+      </div>
+    </div>
+  `);
+}
+
+// ── Screen 8: Meeting Confirmed ───────────────────────────────────────
+function screenBooked() {
+  const dates = { tue:'Tue, May 27, 2025', wed:'Wed, May 28, 2025', thu:'Thu, May 29, 2025', fri:'Fri, May 30, 2025' };
+  const dateLabel = dates[S.selectedDate] || 'Tue, May 27, 2025';
+  const timeLabel = S.selectedTime || '11:00 AM';
+  return pbScreen('Kickoff Confirmed', `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:300px;">
+      <div class="pb-animate" style="background:#fff;border-radius:16px;border:1px solid #E5E7EB;padding:52px 56px;text-align:center;width:100%;max-width:560px;">
+        <div style="width:72px;height:72px;background:#DCFCE7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:34px;">✓</div>
+        <h2 style="font-size:26px;font-weight:800;color:#111;margin:0 0 8px;">You're booked with Jayla! 🎉</h2>
+        <p style="font-size:15px;color:#6B7280;margin:0 0 28px;line-height:1.6;">We're looking forward to meeting with you.</p>
+        <div style="border:1.5px solid #E5E7EB;border-radius:12px;padding:20px;text-align:left;margin-bottom:20px;">
+          <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px;">
+            <div style="width:40px;height:40px;background:#EEF2FF;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;">📅</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:#111;">${dateLabel}</div>
+              <div style="font-size:13px;color:#9CA3AF;">${timeLabel} – 11:30 AM (30 min)</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:center;padding-top:14px;border-top:1px solid #F3F4F6;">
+            <div style="width:40px;height:40px;background:#EEF2FF;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;">💻</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#111;">Zoom</div>
+              <div style="font-size:13px;color:#9CA3AF;">A calendar invite has been sent to you with the Zoom link.</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:16px;margin-bottom:28px;font-size:13px;color:#92400E;line-height:1.6;text-align:left;">
+          🎯 We'll review your materials beforehand and come prepared.
+        </div>
+        <button onclick="goToWorkspace()" class="pb-btn-purple" style="max-width:300px;margin:0 auto;">Back to my workspace</button>
+      </div>
+    </div>
+  `);
+}
+
+// ── Email Screen ──────────────────────────────────────────────────────
+function screenEmail() {
+  const emails = [
+    { from:'PosterChild', subject:'Your workspace is almost ready', preview:'We\'ve already started preparing your org profile…', time:'6:02 AM', unread:true, active:true },
+    { from:'Leah Morgan', subject:'Re: Kickoff scheduling', preview:'Does Thursday at 2pm work for everyone?', time:'Yesterday', unread:false, active:false },
+    { from:'Ford Foundation', subject:'Grant cycle opening — fall 2026', preview:'Applications open May 1st. Review the updated…', time:'Mon', unread:false, active:false },
+    { from:'RWJF Alerts', subject:'New impact data available', preview:'Your quarterly impact metrics are ready to review.', time:'Apr 26', unread:false, active:false },
+    { from:'Jason Kim', subject:'Brand kit uploaded', preview:'Hey — just dropped the files in the shared Drive…', time:'Apr 25', unread:false, active:false },
+  ];
+
+  const sidebarItems = [
+    { icon:'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', label:'Inbox', count:1, active:true },
+    { icon:'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z', label:'Starred', count:0, active:false },
+    { icon:'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', label:'Snoozed', count:0, active:false },
+    { icon:'M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6', label:'Sent', count:0, active:false },
+    { icon:'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', label:'Drafts', count:2, active:false },
+  ];
+
+  return `
+  <div style="width:100%;height:100vh;display:flex;flex-direction:column;background:#f6f8fc;font-family:'Google Sans',Roboto,Arial,sans-serif;overflow:hidden;">
+
+    <!-- Gmail top bar -->
+    <div style="height:64px;background:#f6f8fc;display:flex;align-items:center;gap:10px;padding:0 16px;flex-shrink:0;border-bottom:1px solid transparent;">
+      <div style="display:flex;align-items:center;gap:4px;width:256px;">
+        <div style="padding:8px;border-radius:50%;cursor:pointer;display:flex;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-left:4px;">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="4"/><path d="M6 10.5L16 18l10-7.5" stroke="#EA4335" stroke-width="2" fill="none"/><path d="M6 10.5v13h20v-13L16 18 6 10.5z" fill="#4285F4"/><path d="M6 10.5h20" stroke="#EA4335" stroke-width="0"/><rect x="6" y="10.5" width="20" height="13" rx="0" fill="none" stroke="#FBBC04" stroke-width="0"/></svg>
+          <span style="font-size:22px;color:#5f6368;font-weight:400;letter-spacing:-0.5px;">Gmail</span>
+        </div>
+      </div>
+      <div style="flex:1;max-width:720px;">
+        <div style="background:#eaf1fb;border-radius:24px;display:flex;align-items:center;gap:8px;padding:8px 16px;height:46px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span style="font-size:16px;color:#5f6368;">Search mail</span>
+        </div>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:4px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#F5B700;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#1a1a1a;cursor:pointer;">LM</div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div style="flex:1;display:flex;overflow:hidden;">
+
+      <!-- Left sidebar -->
+      <div style="width:256px;flex-shrink:0;overflow-y:auto;padding:8px 0;">
+        <div style="margin:4px 12px 16px;">
+          <button style="display:flex;align-items:center;gap:12px;background:#fff;border:none;border-radius:16px;padding:16px 24px;font-size:14px;font-weight:500;color:#3c4043;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.2);width:148px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z" fill="#EA4335"/><line x1="12" y1="8" x2="12" y2="16" stroke="#fff" stroke-width="2"/><line x1="8" y1="12" x2="16" y2="12" stroke="#fff" stroke-width="2"/></svg>
+            Compose
+          </button>
+        </div>
+        ${sidebarItems.map(item => `
+          <div style="display:flex;align-items:center;gap:16px;padding:6px 16px 6px 26px;border-radius:0 16px 16px 0;cursor:pointer;background:${item.active?'#d3e3fd':'transparent'};margin-right:14px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${item.active?'#0b57d0':'#444746'}" stroke-width="1.5"><path d="${item.icon}"/></svg>
+            <span style="font-size:14px;font-weight:${item.active?'700':'400'};color:${item.active?'#0b57d0':'#202124'};flex:1;">${item.label}</span>
+            ${item.count ? `<span style="font-size:12px;font-weight:700;color:${item.active?'#0b57d0':'#444746'}">${item.count}</span>` : ''}
+          </div>`).join('')}
+      </div>
+
+      <!-- Email list + preview split -->
+      <div style="flex:1;display:flex;overflow:hidden;background:#fff;border-radius:16px;margin:0 16px 16px 0;box-shadow:0 1px 2px rgba(0,0,0,.1);">
+
+        <!-- Email list -->
+        <div style="width:340px;flex-shrink:0;border-right:1px solid #e0e0e0;overflow-y:auto;">
+          <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #e0e0e0;">
+            <span style="font-size:14px;font-weight:600;color:#202124;">Primary</span>
+          </div>
+          ${emails.map(e => `
+            <div style="display:flex;gap:10px;padding:10px 14px;cursor:pointer;background:${e.active?'#e8f0fe':'#fff'};border-bottom:1px solid #f1f3f4;border-left:${e.active?'3px solid #1a73e8':'3px solid transparent'};" onclick="${e.active?'':''}">
+              <div style="width:36px;height:36px;border-radius:50%;background:${e.active?'#F5B700':e.from==='Leah Morgan'?'#4285F4':e.from==='Ford Foundation'?'#0F9D58':e.from==='RWJF Alerts'?'#DB4437':'#9C27B0'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;">${e.from[0]}</div>
+              <div style="min-width:0;flex:1;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">
+                  <span style="font-size:14px;font-weight:${e.unread?'700':'400'};color:#202124;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${e.from}</span>
+                  <span style="font-size:12px;font-weight:${e.unread?'700':'400'};color:${e.unread?'#202124':'#5f6368'};flex-shrink:0;">${e.time}</span>
+                </div>
+                <div style="font-size:13px;font-weight:${e.unread?'600':'400'};color:#202124;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.subject}</div>
+                <div style="font-size:12px;color:#5f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.preview}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+
+        <!-- Email preview -->
+        <div style="flex:1;overflow-y:auto;padding:28px 32px 40px;">
+          <div style="font-size:22px;font-weight:400;color:#202124;margin-bottom:16px;">Your workspace is almost ready</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:#F5B700;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#1a1a1a;flex-shrink:0;">✦</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#202124;">PosterChild <span style="font-weight:400;color:#5f6368;">&lt;hello@posterchild.ai&gt;</span></div>
+              <div style="font-size:12px;color:#5f6368;">to Leah Morgan · 6:02 AM</div>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:10px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="1.5" style="cursor:pointer;"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="1.5" style="cursor:pointer;"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            </div>
+          </div>
+
+          <!-- Email body card -->
+          <div style="max-width:600px;border-radius:8px;overflow:hidden;border:1px solid #e0e0e0;box-shadow:0 1px 4px rgba(0,0,0,.08);">
+
+            <!-- Email header banner -->
+            <div style="background:#6B5C00;padding:28px 32px;position:relative;overflow:hidden;">
+              <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 60%);pointer-events:none;"></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+                <div style="width:28px;height:28px;background:#F5B700;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#1a1a1a;flex-shrink:0;">✦</div>
+                <span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:.01em;">PosterChild</span>
+              </div>
+              <div style="display:flex;gap:20px;align-items:flex-start;">
+                <div style="flex:1;">
+                  <div style="font-size:26px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:14px;">Your PosterChild<br>workspace is<br>almost ready.</div>
+                  <div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.55;margin-bottom:4px;">We've prepared some information for your<br>organization to help you get started.</div>
+                  <div style="font-size:13px;color:rgba(255,255,255,.8);">Sign in to review it and guide the final steps.</div>
+                </div>
+                <!-- Impact snapshot card -->
+                <div style="background:#fff;border-radius:10px;padding:14px 16px;min-width:180px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+                  <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9CA3AF;margin-bottom:10px;">Your Impact Snapshot</div>
+                  <div style="display:flex;gap:12px;margin-bottom:10px;">
+                    <div style="flex:1;">
+                      <div style="font-size:22px;font-weight:800;color:#111;line-height:1;">80</div>
+                      <div style="font-size:10px;color:#6B7280;margin-top:2px;">Stories Found</div>
+                    </div>
+                    <div style="flex:1;">
+                      <div style="font-size:22px;font-weight:800;color:#111;line-height:1;">186</div>
+                      <div style="font-size:10px;color:#6B7280;margin-top:2px;">Qualified Funders</div>
+                      <div style="font-size:10px;font-weight:600;color:#059669;margin-top:2px;">$109.2M+</div>
+                      <div style="font-size:9px;color:#6B7280;">Est. Grant Potential</div>
+                    </div>
+                  </div>
+                  <div style="font-size:9px;color:#9CA3AF;margin-bottom:6px;">Stories from your community</div>
+                  <div style="display:flex;gap:6px;">
+                    <div style="flex:1;background:#F9FAFB;border-radius:6px;padding:6px;">
+                      <div style="font-size:8px;color:#6B7280;line-height:1.4;">❝ Building trust one family at a time</div>
+                      <div style="width:16px;height:16px;border-radius:50%;background:#F5B700;margin-top:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#1a1a1a;">A</div>
+                    </div>
+                    <div style="flex:1;background:#F9FAFB;border-radius:6px;padding:6px;">
+                      <div style="font-size:8px;color:#6B7280;line-height:1.4;">❝ Real support for real people</div>
+                      <div style="width:16px;height:16px;border-radius:50%;background:#4285F4;margin-top:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;">J</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email body -->
+            <div style="background:#fff;padding:28px 32px;">
+              <p style="font-size:15px;color:#202124;margin:0 0 16px;line-height:1.6;">Hi Leah,</p>
+              <p style="font-size:14px;color:#3c4043;line-height:1.65;margin:0 0 24px;">We've already started preparing your organization profile for <strong>Hope Harbor Collective</strong> so you can quickly review what we have, confirm the details, and help us complete the final setup.</p>
+
+              <!-- Checklist box -->
+              <div style="background:#FAFAFA;border:1px solid #e8eaed;border-radius:10px;padding:20px 24px;margin-bottom:24px;">
+                <p style="font-size:13px;font-weight:700;color:#202124;margin:0 0 16px;">To finish your pre-onboarding, we still need a few things from you.</p>
+                ${[
+                  { icon:'🎨', label:'Your brand kit',           desc:'Logo, colors, fonts, and any brand guidelines' },
+                  { icon:'🖼', label:'High-quality images',       desc:'Photos of your team, programs, or community' },
+                  { icon:'💬', label:'Testimonials & stories',    desc:'Real stories from the people you serve' },
+                  { icon:'📄', label:'Impact reports',            desc:'Outcomes, metrics, and results' },
+                  { icon:'📊', label:'Surveys or feedback',       desc:'Insights and feedback from your community' },
+                ].map(row => `
+                  <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">
+                    <div style="width:32px;height:32px;background:#FEF9C3;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${row.icon}</div>
+                    <div>
+                      <div style="font-size:13px;font-weight:700;color:#D97706;">${row.label}</div>
+                      <div style="font-size:12px;color:#5f6368;">${row.desc}</div>
+                    </div>
+                  </div>`).join('')}
+              </div>
+
+              <!-- Callout -->
+              <div style="display:flex;align-items:flex-start;gap:16px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
+                <div style="font-size:22px;flex-shrink:0;">✦</div>
+                <div style="flex:1;font-size:13px;color:#3c4043;line-height:1.6;">The more you share, the stronger your story—and the better your funding matches.</div>
+                <div style="font-size:12px;color:#5f6368;text-align:right;white-space:nowrap;">Most organizations<br>complete this in<br><strong style="color:#D97706;">10–15 minutes.</strong></div>
+              </div>
+
+              <!-- CTA -->
+              <div style="text-align:center;margin-bottom:28px;">
+                <button onclick="go('upload-landing')" style="background:#F5B700;color:#1a1a1a;font-weight:700;font-size:15px;padding:14px 40px;border-radius:8px;border:none;cursor:pointer;letter-spacing:.01em;box-shadow:0 2px 8px rgba(245,183,0,.4);" onmouseover="this.style.background='#E5A800'" onmouseout="this.style.background='#F5B700'">
+                  Start Pre-Boarding
+                </button>
+              </div>
+
+              <hr style="border:none;border-top:1px solid #e8eaed;margin-bottom:20px;">
+
+              <!-- Footer -->
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:28px;height:28px;background:#F5B700;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#1a1a1a;flex-shrink:0;">✦</div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:#202124;">Thank you,</div>
+                  <div style="font-size:12px;color:#5f6368;">The PosterChild Team</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Main Render ───────────────────────────────────────────────────────
+function render() {
+  try {
+    ensureValidScreen();
+    const map = {
+      email:screenEmail,
+      'upload-landing':screenUploadLanding,
+      'great-start':screenGreatStart,
+      'pipeline-ready':screenPipelineReady,
+      'no-schedule':screenNoSchedule,
+      booked:screenBooked,
+      welcome:screenWelcome, narrative:screenNarrative, template:screenTemplate,
+      logistics:screenLogistics, funders:screenFunders, forge:screenForge, celebration:screenCelebration,
+      dashboard:screenDashboard,
+      'jayla-prep':screenJaylaPrep, 'jayla-live':screenJaylaLive,
+      'jayla-alerts':screenJaylaAlerts, 'jayla-praise':screenJaylaPraise
+    };
+    document.getElementById('app').innerHTML = (map[S.screen]||screenEmail)();
+    document.querySelector('[style*="overflow-y:auto;padding:24px"]')?.scrollTo(0,0);
+  } catch (e) {
+    toast('Render error: ' + (e && e.message ? e.message : String(e)));
+    console.error(e);
+  }
+}
+
+// Expose handlers for inline onclick attributes.
+window.go = go;
+window.pickTemplate = pickTemplate;
+window.pickNarrative = pickNarrative;
+window.pickFundingFocus = pickFundingFocus;
+window.advanceFromFunders = advanceFromFunders;
+window.advForm = advForm;
+window.doPublish = doPublish;
+window.goToDashboardFromCelebration = goToDashboardFromCelebration;
+window.doMission = doMission;
+window.forgeBodyInput = forgeBodyInput;
+window.forgeQuoteInput = forgeQuoteInput;
+window.forgeTitleInput = forgeTitleInput;
+window.forgeAddImage = forgeAddImage;
+window.doPraiseSend = doPraiseSend;
+window.setPraiseVariant = setPraiseVariant;
+window.startUpload = startUpload;
+window.skipUpload = skipUpload;
+window.goFromUploadSuccess = goFromUploadSuccess;
+window.goFromGreatStart = goFromGreatStart;
+window.openScheduleModal = openScheduleModal;
+window.closeScheduleModal = closeScheduleModal;
+window.selectPBDate = selectPBDate;
+window.selectPBTime = selectPBTime;
+window.confirmMeeting = confirmMeeting;
+window.goToWorkspace = goToWorkspace;
+
+render();
+</script>
+</body>
+</html>
