@@ -74,15 +74,15 @@
     @keyframes fade-in { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
     .pb-animate { animation: fade-in .35s ease forwards; }
     .progress-bar-animated { animation: progress-fill 1.8s cubic-bezier(.4,0,.2,1) forwards; }
-    .pb-btn-purple { background:#5B4FCF; color:#fff; font-weight:700; font-size:15px; padding:14px 0; border-radius:10px; border:none; cursor:pointer; width:100%; transition:background .15s; }
-    .pb-btn-purple:hover { background:#4C41B8; }
-    .pb-btn-purple:disabled { background:#C4C0E8; cursor:not-allowed; }
+    .pb-btn-purple { background:#1B7A5E; color:#fff; font-weight:700; font-size:15px; padding:14px 0; border-radius:10px; border:none; cursor:pointer; width:100%; transition:background .15s; }
+    .pb-btn-purple:hover { background:#156650; }
+    .pb-btn-purple:disabled { background:#A8D9C8; cursor:not-allowed; }
     .pb-date-btn { flex:1; background:#fff; border:1.5px solid #E5E7EB; border-radius:10px; padding:10px 6px; cursor:pointer; text-align:center; transition:all .15s; }
-    .pb-date-btn:hover { border-color:#5B4FCF; }
-    .pb-date-btn.selected { border-color:#5B4FCF; background:#EEF2FF; }
-    .pb-time-btn { background:#EEF2FF; border:1.5px solid transparent; border-radius:8px; padding:9px 0; cursor:pointer; font-size:13px; font-weight:600; color:#5B4FCF; text-align:center; width:100%; transition:all .15s; }
-    .pb-time-btn:hover { border-color:#5B4FCF; }
-    .pb-time-btn.selected { background:#5B4FCF; color:#fff; border-color:#5B4FCF; }
+    .pb-date-btn:hover { border-color:#1B7A5E; }
+    .pb-date-btn.selected { border-color:#1B7A5E; background:#E5F5EE; }
+    .pb-time-btn { background:#E5F5EE; border:1.5px solid transparent; border-radius:8px; padding:9px 0; cursor:pointer; font-size:13px; font-weight:600; color:#1B7A5E; text-align:center; width:100%; transition:all .15s; }
+    .pb-time-btn:hover { border-color:#1B7A5E; }
+    .pb-time-btn.selected { background:#1B7A5E; color:#fff; border-color:#1B7A5E; }
   </style>
 </head>
 <body class="bg-gray-50 overflow-hidden h-screen">
@@ -111,6 +111,8 @@ let S = {
   selectedTime: null,
   uploadSkipped: false,
   analysisPhase: 0,
+  brandKitDone: false,
+  brandColor: '#1B7A5E',
 };
 
 // ── Data ──────────────────────────────────────────────────────────────
@@ -264,7 +266,7 @@ function toast(msg) {
   el.classList.add('show');
   toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
 }
-const PRE_BOARDING = ['email','upload-landing','great-start','pipeline-ready','no-schedule','booked'];
+const PRE_BOARDING = ['email','upload-landing','brand-kit','great-start','pipeline-ready','no-schedule','booked'];
 function ensureValidScreen() {
   if (PRE_BOARDING.includes(S.screen)) return;
   if (String(S.screen).startsWith('jayla')) return;
@@ -312,8 +314,10 @@ function startUpload() {
     render();
   }, 2400);
 }
-function skipUpload() { S.uploadSkipped = true; S.screen = 'great-start'; render(); }
-function goFromUploadSuccess() { S.showUploadSuccess = false; S.screen = 'great-start'; S.analysisPhase = 0; render(); }
+function skipUpload() { S.uploadSkipped = true; S.screen = 'brand-kit'; render(); }
+function goFromUploadSuccess() { S.showUploadSuccess = false; S.screen = 'brand-kit'; render(); }
+function goFromBrandKit() { S.brandKitDone = true; S.screen = 'great-start'; S.analysisPhase = 0; render(); }
+function selectBrandColor(c) { S.brandColor = c; render(); }
 function goFromGreatStart() { S.screen = 'pipeline-ready'; S.analysisPhase = 0; render(); }
 let _analysisTimer = null;
 function startAnalysisTimer() {
@@ -455,7 +459,7 @@ function sidebar() {
       </div>
 
       <!-- User footer -->
-      <div style="padding:12px 14px;border-top:1px solid #F3F4F6;display:flex;align-items:center;gap:9px;">
+      <div style="padding:12px 14px;border-top:1px solid #D8EDE3;display:flex;align-items:center;gap:9px;">
         <div style="width:30px;height:30px;background:#F5B700;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1a1a1a;flex-shrink:0;">DM</div>
         <div style="min-width:0;">
           <div style="font-size:12px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Darien Menendez</div>
@@ -769,7 +773,7 @@ function screenNarrative() {
           }).join('')}
         </div>
 
-        <div style="display:flex;justify-content:flex-end;margin-top:16px;padding-top:16px;border-top:1px solid #F3F4F6;">
+        <div style="display:flex;justify-content:flex-end;margin-top:16px;padding-top:16px;border-top:1px solid #D8EDE3;">
           <button onclick="go('funders')" class="btn-yellow" style="padding:10px 22px;" ${S.narrative ? '' : 'disabled'}>
             Continue →
           </button>
@@ -861,7 +865,7 @@ function screenTemplate() {
                   ${isRec?`<div style="position:absolute;top:7px;right:7px;background:#F5B700;color:#1a1a1a;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;">Match</div>`:''}
                   ${isSel?`<div style="position:absolute;inset:0;background:rgba(245,183,0,.12);display:flex;align-items:center;justify-content:center;"><div style="background:#F5B700;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">✓</div></div>`:''}
                 </div>
-                <div style="padding:11px 13px;border-top:1px solid #F3F4F6;">
+                <div style="padding:11px 13px;border-top:1px solid #D8EDE3;">
                   <div style="font-size:13px;font-weight:700;margin-bottom:3px;">${t.name}</div>
                   <div style="font-size:11px;color:#6B7280;line-height:1.5;">${t.desc}</div>
                   <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">
@@ -1023,7 +1027,7 @@ function screenLogistics() {
         </div>
         ${stepBanner}
         ${fieldHtml}
-        <div style="display:flex;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:1px solid #F3F4F6;">
+        <div style="display:flex;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:1px solid #D8EDE3;">
           <button onclick="${S.formStep===0?`go('template')`:`advForm(${S.formStep-1})`}" class="btn-outline">← Back</button>
           <button onclick="${S.formStep<FORM_STEPS.length-1?`advForm(${S.formStep+1})`:`go('forge')`}" class="btn-yellow" style="padding:10px 22px;">
             ${S.formStep<FORM_STEPS.length-1?'Confirm & Continue →':'Continue to first story →'}
@@ -1148,7 +1152,7 @@ function screenFunders() {
           ${CATS.map(catCard).join('')}
         </div>
 
-        <div style="display:flex;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:1px solid #F3F4F6;">
+        <div style="display:flex;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:1px solid #D8EDE3;">
           <button onclick="go('narrative')" class="btn-outline">← Back</button>
           <button type="button" onclick="advanceFromFunders()" class="btn-yellow" style="padding:10px 22px;" ${!picked?'disabled':''}>
             Continue →
@@ -1573,24 +1577,26 @@ function screenJaylaPraise() {
 function preBoardingSidebar() {
   const screenToStep = {
     'upload-landing':0,'upload-progress':0,'upload-success':0,
-    'great-start':1,'pipeline-ready':2,'no-schedule':3,'booked':3,
+    'brand-kit':1,
+    'great-start':2,'pipeline-ready':3,'no-schedule':4,'booked':4,
   };
   const active = screenToStep[S.screen] ?? 0;
   const steps = [
-    { icon:'📤', label:'Upload Materials',  desc:'Share what you have' },
-    { icon:'⚡', label:'AI Analysis',        desc:'We review your content' },
-    { icon:'🎯', label:'Your Pipeline',      desc:'Funders & matches' },
-    { icon:'📅', label:'Schedule Kickoff',   desc:'Meet with Jayla' },
+    { icon:'📤', label:'Upload Materials',     desc:'Share what you have' },
+    { icon:'🎨', label:'Brand Kit',             desc:'Make it yours' },
+    { icon:'⚡', label:'AI Analysis',           desc:'We review your content' },
+    { icon:'🎯', label:'Your Pipeline',         desc:'Funders & matches' },
+    { icon:'📅', label:'Schedule Kickoff',      desc:'Meet with Jayla' },
   ];
   return `
-    <aside style="width:224px;flex-shrink:0;background:#fff;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;overflow-y:auto;z-index:10;">
-      <div style="padding:16px 14px 12px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;gap:8px;">
+    <aside style="width:224px;flex-shrink:0;background:#FAFDF9;border-right:1px solid #D8EDE3;display:flex;flex-direction:column;overflow-y:auto;z-index:10;">
+      <div style="padding:16px 14px 12px;border-bottom:1px solid #D8EDE3;display:flex;align-items:center;gap:8px;">
         <div style="width:30px;height:30px;background:#F5B700;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#1a1a1a;">✦</div>
         <span style="font-weight:800;font-size:15px;color:#111;">PosterChild</span>
       </div>
       <div style="padding:10px 14px 4px;">
-        <div style="font-size:12px;color:#9CA3AF;">Organization</div>
-        <div style="font-size:13px;font-weight:600;color:#111;margin-top:1px;">Hope Harbor Collective</div>
+        <div style="font-size:11px;color:#6B9E87;font-weight:500;">Organization</div>
+        <div style="font-size:13px;font-weight:700;color:#1C2B22;margin-top:1px;">Hope Harbor Collective</div>
       </div>
       <div style="padding:8px 8px;flex:1;">
         <div class="nav-section">Pre-Boarding</div>
@@ -1598,16 +1604,16 @@ function preBoardingSidebar() {
           const done = i < active;
           const isActive = i === active;
           return `
-          <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:8px;margin-bottom:2px;background:${isActive?'#EEF2FF':'transparent'};">
-            <div style="width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${done?'#5B4FCF':isActive?'#5B4FCF':'#F3F4F6'};color:${done||isActive?'#fff':'#9CA3AF'};margin-top:1px;">${done?'✓':(i+1)}</div>
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:8px;margin-bottom:2px;background:${isActive?'#E0F2EB':'transparent'};border-left:${isActive?'3px solid #1B7A5E':'3px solid transparent'};">
+            <div style="width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${done?'#1B7A5E':isActive?'#1B7A5E':'#E5E7EB'};color:${done||isActive?'#fff':'#9CA3AF'};margin-top:1px;">${done?'✓':(i+1)}</div>
             <div>
-              <div style="font-size:13px;font-weight:${isActive?'700':'500'};color:${isActive?'#5B4FCF':done?'#374151':'#9CA3AF'};">${s.label}</div>
-              <div style="font-size:11px;color:#9CA3AF;">${s.desc}</div>
+              <div style="font-size:13px;font-weight:${isActive?'700':'500'};color:${isActive?'#1B7A5E':done?'#374151':'#9CA3AF'};">${s.label}</div>
+              <div style="font-size:11px;color:${isActive?'#4DA882':'#9CA3AF'};">${s.desc}</div>
             </div>
           </div>`;
         }).join('')}
       </div>
-      <div style="padding:12px 14px;border-top:1px solid #F3F4F6;display:flex;align-items:center;gap:9px;">
+      <div style="padding:12px 14px;border-top:1px solid #D8EDE3;display:flex;align-items:center;gap:9px;">
         <div style="width:30px;height:30px;background:#F5B700;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1a1a1a;flex-shrink:0;">LM</div>
         <div style="min-width:0;">
           <div style="font-size:12px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Leah Morgan</div>
@@ -1622,13 +1628,15 @@ function pbScreen(title, content) {
   return `
     <div style="display:flex;flex:1;width:100%;height:100vh;overflow:hidden;">
       ${preBoardingSidebar()}
-      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#F8F7FF;">
-        <div style="background:#fff;border-bottom:1px solid #E5E7EB;padding:14px 36px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#F7FAF8;">
+        <div style="background:#fff;border-bottom:1px solid #D8EDE3;padding:14px 36px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
           <div>
-            <div style="font-size:11px;color:#9CA3AF;margin-bottom:1px;">Hope Harbor Collective · Pre-Boarding</div>
-            <div style="font-size:18px;font-weight:700;color:#111;">${title}</div>
+            <div style="font-size:11px;color:#6B9E87;margin-bottom:2px;font-weight:500;">Hope Harbor Collective · Pre-Boarding</div>
+            <div style="font-size:19px;font-weight:800;color:#1C2B22;">${title}</div>
           </div>
-          <div style="font-size:12px;color:#6B7280;cursor:pointer;display:flex;align-items:center;gap:5px;">Need help? <span style="width:19px;height:19px;border-radius:50%;border:1.5px solid #D1D5DB;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">?</span></div>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="font-size:12px;color:#6B7280;cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 12px;border:1px solid #E5E7EB;border-radius:8px;background:#FAFAFA;">💬 Need help?</div>
+          </div>
         </div>
         <div style="flex:1;overflow-y:auto;overflow-x:hidden;">
           <div style="width:100%;padding:28px 36px;box-sizing:border-box;">
@@ -1685,7 +1693,7 @@ function screenUploadLanding() {
             { icon:'🖼', label:'Photos or brand materials', desc:'Program photos, team photos, logo, colors' },
           ].map(r => `
             <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
-              <div style="width:34px;height:34px;background:#EEF2FF;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">${r.icon}</div>
+              <div style="width:34px;height:34px;background:#E5F5EE;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">${r.icon}</div>
               <div>
                 <div style="font-size:13px;font-weight:600;color:#374151;">${r.label}</div>
                 <div style="font-size:12px;color:#9CA3AF;">${r.desc}</div>
@@ -1697,9 +1705,9 @@ function screenUploadLanding() {
         <div style="display:flex;flex-direction:column;gap:16px;">
           <!-- Drop zone -->
           <div style="background:#fff;border-radius:12px;border:2px dashed #C4BBFF;padding:28px;text-align:center;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;" onclick="startUpload()">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="margin-bottom:10px;"><circle cx="20" cy="20" r="19" stroke="#C4BBFF" stroke-width="1.5"/><path d="M20 26v-12M15 18l5-5 5 5" stroke="#5B4FCF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="margin-bottom:10px;"><circle cx="20" cy="20" r="19" stroke="#C4BBFF" stroke-width="1.5"/><path d="M20 26v-12M15 18l5-5 5 5" stroke="#1B7A5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <div style="font-size:14px;font-weight:600;color:#374151;margin-bottom:4px;">Drag &amp; drop files here</div>
-            <div style="font-size:13px;color:#374151;">or <span style="color:#5B4FCF;text-decoration:underline;">browse</span></div>
+            <div style="font-size:13px;color:#374151;">or <span style="color:#1B7A5E;text-decoration:underline;">browse</span></div>
             <div style="font-size:11px;color:#9CA3AF;margin-top:10px;line-height:1.6;">PDF, DOC, DOCX, PPT, XLS, CSV, JPG, PNG<br>(Max 100MB)</div>
           </div>
 
@@ -1709,7 +1717,7 @@ function screenUploadLanding() {
           <!-- Drive/Dropbox -->
           <div style="background:#fff;border-radius:12px;border:1px solid #E5E7EB;padding:18px;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-              <div style="width:32px;height:32px;background:#EEF2FF;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔗</div>
+              <div style="width:32px;height:32px;background:#E5F5EE;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🔗</div>
               <div>
                 <div style="font-size:13px;font-weight:700;color:#111;">Add a link to your Google Drive or Dropbox</div>
                 <div style="font-size:11px;color:#9CA3AF;">We'll pull what we can and keep your files secure.</div>
@@ -1717,7 +1725,7 @@ function screenUploadLanding() {
             </div>
             <div style="display:flex;gap:8px;align-items:center;">
               <input type="text" placeholder="Paste link here" style="flex:1;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-size:13px;color:#374151;background:#fff;"/>
-              <button onclick="startUpload()" style="background:#5B4FCF;color:#fff;font-weight:600;font-size:13px;padding:9px 16px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;">Add link</button>
+              <button onclick="startUpload()" style="background:#1B7A5E;color:#fff;font-weight:600;font-size:13px;padding:9px 16px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;">Add link</button>
               <span style="font-size:22px;">🌐</span>
               <span style="font-size:22px;">📦</span>
             </div>
@@ -1756,11 +1764,11 @@ function screenUploadLanding() {
           <div style="flex:1;min-width:0;">
             <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:9px;">2024_Impact_Report.pdf</div>
             <div style="background:#E5E7EB;border-radius:99px;height:7px;overflow:hidden;">
-              <div class="progress-bar-animated" style="height:100%;background:linear-gradient(90deg,#5B4FCF,#7C6EF5);border-radius:99px;width:0%;"></div>
+              <div class="progress-bar-animated" style="height:100%;background:linear-gradient(90deg,#1B7A5E,#28A87F);border-radius:99px;width:0%;"></div>
             </div>
             <div style="display:flex;justify-content:space-between;margin-top:5px;">
               <span style="font-size:11px;color:#9CA3AF;">2.4 MB</span>
-              <span style="font-size:11px;color:#5B4FCF;font-weight:600;">75%</span>
+              <span style="font-size:11px;color:#1B7A5E;font-weight:600;">75%</span>
             </div>
           </div>
         </div>
@@ -1804,11 +1812,11 @@ function screenUploadProgress() {
           <div style="flex:1;min-width:0;">
             <div style="font-size:14px;font-weight:600;color:#374151;margin-bottom:10px;">2024_Impact_Report.pdf</div>
             <div style="background:#E5E7EB;border-radius:99px;height:7px;overflow:hidden;">
-              <div class="progress-bar-animated" style="height:100%;background:linear-gradient(90deg,#5B4FCF,#7C6EF5);border-radius:99px;width:0%;"></div>
+              <div class="progress-bar-animated" style="height:100%;background:linear-gradient(90deg,#1B7A5E,#28A87F);border-radius:99px;width:0%;"></div>
             </div>
             <div style="display:flex;justify-content:space-between;margin-top:6px;">
               <span style="font-size:12px;color:#9CA3AF;">2.4 MB</span>
-              <span style="font-size:12px;color:#5B4FCF;font-weight:600;">75%</span>
+              <span style="font-size:12px;color:#1B7A5E;font-weight:600;">75%</span>
             </div>
           </div>
         </div>
@@ -1844,6 +1852,87 @@ function screenUploadSuccess() {
   `);
 }
 
+// ── Screen 2b: Brand Kit & Confirm Details ───────────────────────────
+function screenBrandKit() {
+  const colors = [
+    { hex:'#1B7A5E', name:'Forest Green' },
+    { hex:'#1D6B9C', name:'Ocean Blue' },
+    { hex:'#7B3F9E', name:'Marigold Purple' },
+    { hex:'#C0392B', name:'Crimson' },
+    { hex:'#E67E22', name:'Harvest Orange' },
+    { hex:'#2C3E7B', name:'Deep Navy' },
+  ];
+  return pbScreen('Brand Kit & Confirm Details', `
+    <div style="max-width:680px;margin:0 auto;">
+
+      <!-- Friendly intro -->
+      <div style="background:linear-gradient(135deg,#1B7A5E,#28A87F);border-radius:16px;padding:24px 28px;margin-bottom:24px;display:flex;align-items:center;gap:20px;">
+        <div style="font-size:40px;flex-shrink:0;">🎨</div>
+        <div>
+          <div style="font-size:19px;font-weight:800;color:#fff;margin-bottom:4px;">Let's make this feel like yours</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.6;">Your brand helps us personalize your pipeline, proposals, and outreach — so everything looks and sounds like Hope Harbor Collective.</div>
+        </div>
+      </div>
+
+      <!-- Logo upload -->
+      <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:22px 24px;margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:4px;">Your logo</div>
+        <div style="font-size:12px;color:#9CA3AF;margin-bottom:14px;">We'll use this on proposals and outreach materials.</div>
+        <div style="border:2px dashed #D1D5DB;border-radius:10px;padding:24px;text-align:center;background:#FAFAFA;cursor:pointer;transition:border-color .15s;" onmouseover="this.style.borderColor='#1B7A5E'" onmouseout="this.style.borderColor='#D1D5DB'">
+          <div style="font-size:28px;margin-bottom:8px;">🖼️</div>
+          <div style="font-size:14px;font-weight:600;color:#374151;">Drop your logo here</div>
+          <div style="font-size:12px;color:#9CA3AF;margin-top:3px;">PNG, SVG or JPG · Max 5MB</div>
+          <button style="margin-top:12px;background:#E5F5EE;color:#1B7A5E;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;">Browse files</button>
+        </div>
+        <div style="margin-top:10px;text-align:right;"><span style="font-size:12px;color:#9CA3AF;cursor:pointer;text-decoration:underline;" onclick="goFromBrandKit()">Skip for now →</span></div>
+      </div>
+
+      <!-- Brand color -->
+      <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:22px 24px;margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:4px;">Primary brand color</div>
+        <div style="font-size:12px;color:#9CA3AF;margin-bottom:14px;">Pick the color that best represents your organization.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          ${colors.map(c => `
+            <div onclick="selectBrandColor('${c.hex}')" style="cursor:pointer;text-align:center;">
+              <div style="width:42px;height:42px;background:${c.hex};border-radius:10px;border:3px solid ${S.brandColor===c.hex?'#111':'transparent'};transition:all .15s;box-shadow:${S.brandColor===c.hex?'0 0 0 2px '+c.hex+'55':'none'};"></div>
+              <div style="font-size:10px;color:#9CA3AF;margin-top:4px;width:42px;">${c.name}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Confirm details -->
+      <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:22px 24px;margin-bottom:24px;">
+        <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:4px;">Confirm your details</div>
+        <div style="font-size:12px;color:#9CA3AF;margin-bottom:16px;">Double-check these before we build your pipeline.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Organization name</label>
+            <input type="text" value="Hope Harbor Collective" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 12px;font-size:13px;color:#111;background:#FAFAFA;" />
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Mission tagline</label>
+            <input type="text" value="Building safe spaces for youth in transition" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 12px;font-size:13px;color:#111;background:#FAFAFA;" />
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Primary contact</label>
+            <input type="text" value="Leah Morgan" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 12px;font-size:13px;color:#111;background:#FAFAFA;" />
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Fiscal year end</label>
+            <input type="text" value="December 31" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 12px;font-size:13px;color:#111;background:#FAFAFA;" />
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">Website</label>
+          <input type="text" value="www.hopeharborcollective.org" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 12px;font-size:13px;color:#111;background:#FAFAFA;" />
+        </div>
+      </div>
+
+      <button onclick="goFromBrandKit()" class="pb-btn-purple" style="max-width:340px;">Looks good — let's build my pipeline →</button>
+    </div>
+  `);
+}
+
 // ── Screen 4: Great Start ─────────────────────────────────────────────
 function screenGreatStart() {
   if (S.analysisPhase === 0) {
@@ -1857,18 +1946,18 @@ function screenGreatStart() {
     return pbScreen('AI Analysis', `
       <div style="max-width:620px;margin:0 auto;">
         <div style="background:#fff;border-radius:16px;border:1px solid #E5E7EB;overflow:hidden;box-shadow:0 4px 24px rgba(91,79,207,.1);">
-          <div style="background:linear-gradient(135deg,#5B4FCF,#7C6EF5);padding:24px 28px;display:flex;align-items:center;gap:14px;">
+          <div style="background:linear-gradient(135deg,#1B7A5E,#28A87F);padding:24px 28px;display:flex;align-items:center;gap:14px;">
             <div style="width:44px;height:44px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;animation:spin 2s linear infinite;">⚡</div>
             <div>
               <div style="font-size:18px;font-weight:700;color:#fff;">Analyzing your materials...</div>
               <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:2px;">This usually takes just a few seconds.</div>
             </div>
           </div>
-          <div style="height:4px;background:#EEF2FF;"><div style="height:100%;background:linear-gradient(90deg,#5B4FCF,#7C6EF5);animation:progress-full 4s ease-out forwards;width:0%;border-radius:0 2px 2px 0;"></div></div>
+          <div style="height:4px;background:#E5F5EE;"><div style="height:100%;background:linear-gradient(90deg,#1B7A5E,#28A87F);animation:progress-full 4s ease-out forwards;width:0%;border-radius:0 2px 2px 0;"></div></div>
           <div style="padding:8px 28px 20px;">
             ${scanItems.map((item, i) => `
               <div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:${i<3?'1px solid #F3F4F6':'none'};opacity:0;animation:item-appear .4s ease forwards;animation-delay:${0.4 + i * 0.85}s;">
-                <div style="width:32px;height:32px;background:#EEF2FF;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${item.icon}</div>
+                <div style="width:32px;height:32px;background:#E5F5EE;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${item.icon}</div>
                 <span style="font-size:14px;color:#374151;flex:1;">${item.label}</span>
                 <span style="opacity:0;animation:check-pop .3s ease forwards;animation-delay:${0.85 + i * 0.85}s;color:#059669;font-size:16px;font-weight:700;">✓</span>
               </div>`).join('')}
@@ -1892,7 +1981,7 @@ function screenGreatStart() {
         ${[
           { n:'80',     label:'Stories Found',    sub:'From your community', color:'#059669', bg:'#F0FDF4', border:'#D1FAE5', delay:'.1s' },
           { n:'186',    label:'Funders Matched',  sub:'Active & aligned',    color:'#EA580C', bg:'#FFF7ED', border:'#FED7AA', delay:'.25s' },
-          { n:'$105M+', label:'Grant Potential',  sub:'Estimated total',     color:'#5B4FCF', bg:'#EEF2FF', border:'#C4B5FD', delay:'.4s' },
+          { n:'$105M+', label:'Grant Potential',  sub:'Estimated total',     color:'#1B7A5E', bg:'#E5F5EE', border:'#9DD5BF', delay:'.4s' },
         ].map(s => `
           <div style="background:${s.bg};border:1.5px solid ${s.border};border-radius:12px;padding:18px 20px;opacity:0;animation:stat-count .5s ease forwards;animation-delay:${s.delay};">
             <div style="font-size:28px;font-weight:800;color:${s.color};line-height:1;">${s.n}</div>
@@ -1902,7 +1991,7 @@ function screenGreatStart() {
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px;">
         <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:12px;padding:20px;display:flex;gap:14px;opacity:0;animation:result-rise .5s ease forwards;animation-delay:.5s;">
-          <div style="width:40px;height:40px;background:#EEF2FF;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⚡</div>
+          <div style="width:40px;height:40px;background:#E5F5EE;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⚡</div>
           <div>
             <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:4px;">We're already building your full pipeline.</div>
             <div style="font-size:12px;color:#9CA3AF;">Detailed matches will be ready at your kickoff call.</div>
@@ -1927,12 +2016,12 @@ function screenPipelineReady() {
     <div style="position:relative;">
       <div class="pb-animate">
         <!-- Unlock banner -->
-        <div style="background:linear-gradient(135deg,#5B4FCF,#7C6EF5);border-radius:12px;padding:18px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div style="background:linear-gradient(135deg,#1B7A5E,#28A87F);border-radius:12px;padding:18px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
           <div>
             <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.7);margin-bottom:4px;">Unlock More by Scheduling with Jayla</div>
             <div style="font-size:16px;font-weight:700;color:#fff;">Schedule a walkthrough to get the most out of your pipeline.</div>
           </div>
-          <button onclick="openScheduleModal()" style="background:#fff;color:#5B4FCF;font-weight:700;font-size:13px;padding:10px 20px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;">Schedule your walkthrough →</button>
+          <button onclick="openScheduleModal()" style="background:#fff;color:#1B7A5E;font-weight:700;font-size:13px;padding:10px 20px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;">Schedule your walkthrough →</button>
         </div>
 
         <!-- 2-col cards -->
@@ -2016,7 +2105,7 @@ function scheduleModal() {
             <div style="font-size:12px;color:#9CA3AF;">Funding &amp; Story Strategist</div>
           </div>
           <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
-            <span style="font-size:11px;background:#EEF2FF;color:#5B4FCF;padding:4px 10px;border-radius:99px;font-weight:600;">35 min</span>
+            <span style="font-size:11px;background:#E5F5EE;color:#1B7A5E;padding:4px 10px;border-radius:99px;font-weight:600;">35 min</span>
             <span style="font-size:11px;background:#E0F2FE;color:#0369A1;padding:4px 10px;border-radius:99px;font-weight:600;">Zoom</span>
           </div>
         </div>
@@ -2075,14 +2164,14 @@ function screenBooked() {
         <p style="font-size:15px;color:#6B7280;margin:0 0 28px;line-height:1.6;">We're looking forward to meeting with you.</p>
         <div style="border:1.5px solid #E5E7EB;border-radius:12px;padding:20px;text-align:left;margin-bottom:20px;">
           <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px;">
-            <div style="width:40px;height:40px;background:#EEF2FF;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;">📅</div>
+            <div style="width:40px;height:40px;background:#E5F5EE;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;">📅</div>
             <div>
               <div style="font-size:14px;font-weight:700;color:#111;">${dateLabel}</div>
               <div style="font-size:13px;color:#9CA3AF;">${timeLabel} – 11:30 AM (30 min)</div>
             </div>
           </div>
-          <div style="display:flex;gap:14px;align-items:center;padding-top:14px;border-top:1px solid #F3F4F6;">
-            <div style="width:40px;height:40px;background:#EEF2FF;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;">💻</div>
+          <div style="display:flex;gap:14px;align-items:center;padding-top:14px;border-top:1px solid #D8EDE3;">
+            <div style="width:40px;height:40px;background:#E5F5EE;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;">💻</div>
             <div>
               <div style="font-size:14px;font-weight:600;color:#111;">Zoom</div>
               <div style="font-size:13px;color:#9CA3AF;">A calendar invite has been sent to you with the Zoom link.</div>
@@ -2306,6 +2395,7 @@ function render() {
     const map = {
       email:screenEmail,
       'upload-landing':screenUploadLanding,
+      'brand-kit':screenBrandKit,
       'great-start':screenGreatStart,
       'pipeline-ready':screenPipelineReady,
       'no-schedule':screenNoSchedule,
@@ -2344,6 +2434,8 @@ window.startUpload = startUpload;
 window.skipUpload = skipUpload;
 window.goFromUploadSuccess = goFromUploadSuccess;
 window.goFromGreatStart = goFromGreatStart;
+window.goFromBrandKit = goFromBrandKit;
+window.selectBrandColor = selectBrandColor;
 window.openScheduleModal = openScheduleModal;
 window.closeScheduleModal = closeScheduleModal;
 window.selectPBDate = selectPBDate;
