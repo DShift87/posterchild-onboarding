@@ -264,7 +264,7 @@ function toast(msg) {
   el.classList.add('show');
   toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
 }
-const PRE_BOARDING = ['email','upload-landing','great-start','pipeline-ready','no-schedule','booked'];
+const PRE_BOARDING = ['email','confirm-details','add-materials','files-received','working','schedule-jayla','all-set'];
 function ensureValidScreen() {
   if (PRE_BOARDING.includes(S.screen)) return;
   if (String(S.screen).startsWith('jayla')) return;
@@ -308,31 +308,34 @@ function startUpload() {
   _uploadTimer = setTimeout(() => {
     _uploadTimer = null;
     S.showUploadModal = false;
-    S.showUploadSuccess = true;
+    S.showUploadSuccess = false;
+    S.screen = 'files-received';
     render();
   }, 2400);
 }
-function skipUpload() { S.uploadSkipped = true; S.screen = 'great-start'; render(); }
-function goFromUploadSuccess() { S.showUploadSuccess = false; S.screen = 'great-start'; S.analysisPhase = 0; render(); }
-function goFromGreatStart() { S.screen = 'pipeline-ready'; S.analysisPhase = 0; render(); }
+function skipUpload() { S.uploadSkipped = true; S.screen = 'files-received'; render(); }
+function goFromUploadSuccess() { S.showUploadSuccess = false; S.screen = 'files-received'; render(); }
+function goFromFilesReceived() { S.screen = 'working'; S.analysisPhase = 0; render(); }
+function unlockFullStrategy() { S.screen = 'schedule-jayla'; render(); }
+function goFromGreatStart() { S.screen = 'schedule-jayla'; S.analysisPhase = 0; render(); }
 let _analysisTimer = null;
 function startAnalysisTimer() {
   if (_analysisTimer) clearTimeout(_analysisTimer);
   _analysisTimer = setTimeout(() => {
     _analysisTimer = null;
-    if (S.screen === 'great-start' && S.analysisPhase === 0) {
+    if (S.screen === 'working' && S.analysisPhase === 0) {
       S.analysisPhase = 1; render();
     }
   }, 4200);
 }
 function openScheduleModal() { S.showScheduleModal = true; render(); }
-function closeScheduleModal() { S.showScheduleModal = false; S.screen = 'no-schedule'; render(); }
+function closeScheduleModal() { S.showScheduleModal = false; render(); }
 function selectPBDate(d) { S.selectedDate = d; render(); }
 function selectPBTime(t) { S.selectedTime = t; render(); }
 function confirmMeeting() {
   if (!S.selectedDate || !S.selectedTime) return;
   S.showScheduleModal = false;
-  S.screen = 'booked';
+  S.screen = 'all-set';
   render();
 }
 function goToWorkspace() { S.screen = 'welcome'; render(); }
@@ -1572,15 +1575,21 @@ function screenJaylaPraise() {
 // ── Pre-Boarding Sidebar ──────────────────────────────────────────────
 function preBoardingSidebar() {
   const screenToStep = {
-    'upload-landing':0,'upload-progress':0,'upload-success':0,
-    'great-start':1,'pipeline-ready':2,'no-schedule':3,'booked':3,
+    'confirm-details': 0,
+    'add-materials': 1, 'upload-landing': 1,
+    'files-received': 2,
+    'working': 3, 'great-start': 3,
+    'schedule-jayla': 4, 'pipeline-ready': 4,
+    'all-set': 5, 'booked': 5, 'no-schedule': 4,
   };
   const active = screenToStep[S.screen] ?? 0;
   const steps = [
-    { icon:'📤', label:'Upload Materials',  desc:'Share what you have' },
-    { icon:'⚡', label:'AI Analysis',        desc:'We review your content' },
-    { icon:'🎯', label:'Your Pipeline',      desc:'Funders & matches' },
-    { icon:'📅', label:'Schedule Kickoff',   desc:'Meet with Jayla' },
+    { label:'Confirm Details & Brand', desc:'Review your info' },
+    { label:'Add Your Materials',      desc:'Share what you have' },
+    { label:'Files Received',          desc:'We\'ve got your files' },
+    { label:'We\'re Working',          desc:'Early look at your data' },
+    { label:'Schedule with Jayla',     desc:'Book your walkthrough' },
+    { label:'You\'re All Set!',        desc:'Next steps ready' },
   ];
   return `
     <aside style="width:224px;flex-shrink:0;background:#fff;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;overflow-y:auto;z-index:10;">
@@ -1598,11 +1607,11 @@ function preBoardingSidebar() {
           const done = i < active;
           const isActive = i === active;
           return `
-          <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:8px;margin-bottom:2px;background:${isActive?'#EEF2FF':'transparent'};">
-            <div style="width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:${done?'#5B4FCF':isActive?'#5B4FCF':'#F3F4F6'};color:${done||isActive?'#fff':'#9CA3AF'};margin-top:1px;">${done?'✓':(i+1)}</div>
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;margin-bottom:1px;background:${isActive?'#FFFBEB':'transparent'};">
+            <div style="width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:${done?'#F5B700':isActive?'#F5B700':'#E5E7EB'};color:${done||isActive?'#1a1a1a':'#9CA3AF'};margin-top:2px;">${done?'✓':(i+1)}</div>
             <div>
-              <div style="font-size:13px;font-weight:${isActive?'700':'500'};color:${isActive?'#5B4FCF':done?'#374151':'#9CA3AF'};">${s.label}</div>
-              <div style="font-size:11px;color:#9CA3AF;">${s.desc}</div>
+              <div style="font-size:12px;font-weight:${isActive?'700':'500'};color:${isActive?'#92400E':done?'#374151':'#9CA3AF'};line-height:1.3;">${s.label}</div>
+              <div style="font-size:11px;color:${isActive?'#D97706':'#9CA3AF'};">${s.desc}</div>
             </div>
           </div>`;
         }).join('')}
@@ -2276,7 +2285,7 @@ function screenEmail() {
 
               <!-- CTA -->
               <div style="text-align:center;margin-bottom:28px;">
-                <button onclick="go('upload-landing')" style="background:#F5B700;color:#1a1a1a;font-weight:700;font-size:15px;padding:14px 40px;border-radius:8px;border:none;cursor:pointer;letter-spacing:.01em;box-shadow:0 2px 8px rgba(245,183,0,.4);" onmouseover="this.style.background='#E5A800'" onmouseout="this.style.background='#F5B700'">
+                <button onclick="go('confirm-details')" style="background:#F5B700;color:#1a1a1a;font-weight:700;font-size:15px;padding:14px 40px;border-radius:8px;border:none;cursor:pointer;letter-spacing:.01em;box-shadow:0 2px 8px rgba(245,183,0,.4);" onmouseover="this.style.background='#E5A800'" onmouseout="this.style.background='#F5B700'">
                   Start Pre-Boarding
                 </button>
               </div>
@@ -2299,12 +2308,403 @@ function screenEmail() {
   </div>`;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// NEW 6-SCREEN PRE-BOARDING FLOW
+// ══════════════════════════════════════════════════════════════════════
+
+// ── Screen 1: Confirm Org Details & Brand ─────────────────────────────
+function screenConfirmDetails() {
+  const socialPlatforms = [
+    { label:'f', bg:'#1877F2', color:'#fff' },
+    { label:'in', bg:'#0A66C2', color:'#fff' },
+    { label:'▶', bg:'#FF0000', color:'#fff' },
+  ];
+  const brandColors = ['#2B7A4B','#1C3527','#E8932A'];
+  return pbScreen('Confirm Your Organization Details & Brand', `
+    <div style="max-width:840px;margin:0 auto;">
+      <p style="font-size:14px;color:#6B7280;line-height:1.65;margin-bottom:24px;">We already have some information about you. Please review and confirm so everything is accurate.</p>
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;margin-bottom:24px;">
+
+        <!-- Left: Org form -->
+        <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:24px;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9CA3AF;margin-bottom:18px;">Organization details</div>
+
+          ${[
+            { label:'Organization name', value:'Helping Hands Youth Center' },
+            { label:'EIN', value:'45-1234567' },
+            { label:'Website', value:'helpinghandsyouth.org' },
+          ].map(f => `
+            <div style="margin-bottom:14px;">
+              <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">${f.label}</label>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <input type="text" value="${f.value}" style="flex:1;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 12px;font-size:13px;color:#111;background:#fff;" />
+                <span style="color:#22C55E;font-size:17px;flex-shrink:0;">✓</span>
+              </div>
+            </div>`).join('')}
+
+          <div style="margin-bottom:20px;">
+            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:8px;">Social media <span style="color:#9CA3AF;font-weight:400;">(optional)</span></label>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              ${socialPlatforms.map(p => `<div style="width:30px;height:30px;background:${p.bg};border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${p.color};cursor:pointer;">${p.label}</div>`).join('')}
+              <span style="font-size:12px;color:#6B7280;cursor:pointer;text-decoration:underline;">+ Add more</span>
+            </div>
+          </div>
+
+          <div style="background:#F9FAFB;border-radius:10px;padding:14px;display:flex;gap:10px;align-items:flex-start;">
+            <span style="font-size:18px;flex-shrink:0;">🛡️</span>
+            <p style="font-size:12px;color:#6B7280;margin:0;line-height:1.55;">This information helps us build an accurate foundation for your funding strategy.</p>
+          </div>
+        </div>
+
+        <!-- Right: Brand preview -->
+        <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:24px;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9CA3AF;margin-bottom:14px;">Brand preview</div>
+
+          <div style="background:#F9FAFB;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;">
+            <div style="background:#fff;border-radius:10px;padding:14px 12px;display:flex;align-items:center;gap:10px;margin-bottom:10px;border:1px solid #E5E7EB;">
+              <div style="width:36px;height:36px;background:#E8F5EE;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💚</div>
+              <span style="font-size:12px;font-weight:700;color:#111;line-height:1.3;text-align:left;">Helping Hands<br>Youth Center</span>
+            </div>
+            <button style="background:#fff;border:1.5px solid #E5E7EB;border-radius:7px;padding:6px 14px;font-size:12px;color:#374151;cursor:pointer;">Replace logo</button>
+          </div>
+
+          <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px;">Brand colors</div>
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            ${brandColors.map(c => `<div style="width:34px;height:34px;background:${c};border-radius:50%;border:2px solid #E5E7EB;cursor:pointer;"></div>`).join('')}
+          </div>
+          <span style="font-size:12px;color:#6B7280;text-decoration:underline;cursor:pointer;">Edit colors</span>
+        </div>
+      </div>
+
+      <button onclick="go('add-materials')" class="btn-yellow" style="font-size:15px;padding:13px 32px;border-radius:10px;">Confirm &amp; continue</button>
+    </div>
+  `);
+}
+
+// ── Screen 2: Add Your Materials ──────────────────────────────────────
+function screenAddMaterials() {
+  const checklist = [
+    { icon:'📄', title:'Testimonials or success stories', desc:'Help us showcase the real impact you create.' },
+    { icon:'📊', title:'Impact reports or outcomes data', desc:'Show your progress with numbers and results.' },
+    { icon:'💬', title:'Survey or community feedback', desc:'Help us understand what matters most.' },
+    { icon:'📷', title:'Photos or brand materials', desc:'Help us represent your mission authentically.', optional:true },
+  ];
+  return pbScreen('Add Your Materials', `
+    <div style="max-width:760px;margin:0 auto;">
+      <div style="margin-bottom:6px;">
+        <h2 style="font-size:22px;font-weight:800;color:#111;margin:0 0 10px;">To make this as strong as possible,<br>a few things really help.</h2>
+        <p style="font-size:14px;color:#6B7280;line-height:1.65;margin:0 0 24px;">We've already started gathering information—but adding a few materials helps us better understand your impact and match you with the right opportunities.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+        <!-- Left: checklist + upload -->
+        <div>
+          <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:20px;margin-bottom:16px;">
+            ${checklist.map(c => `
+              <div style="display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid #F3F4F6;">
+                <span style="font-size:18px;flex-shrink:0;margin-top:1px;">${c.icon}</span>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:#111;">${c.title}${c.optional?' <span style="font-size:11px;font-weight:400;color:#9CA3AF;">(optional)</span>':''}</div>
+                  <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">${c.desc}</div>
+                </div>
+              </div>`).join('')}
+          </div>
+
+          <details style="background:#F9FAFB;border-radius:10px;padding:12px 16px;">
+            <summary style="font-size:13px;font-weight:600;color:#374151;cursor:pointer;">Why this matters</summary>
+            <p style="font-size:12px;color:#6B7280;margin:8px 0 0;line-height:1.6;">The more we understand your story, the better we can tell it clearly, match you with aligned funders, and help you raise more support.</p>
+          </details>
+        </div>
+
+        <!-- Right: upload zone -->
+        <div>
+          <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:20px;margin-bottom:14px;">
+            <div onclick="startUpload()" style="border:2px dashed #D1D5DB;border-radius:10px;padding:28px 16px;text-align:center;cursor:pointer;background:#FAFAFA;transition:border-color .15s;" onmouseover="this.style.borderColor='#F5B700'" onmouseout="this.style.borderColor='#D1D5DB'">
+              <div style="font-size:32px;margin-bottom:10px;">☁️</div>
+              <div style="font-size:14px;font-weight:600;color:#374151;">Drag &amp; drop files here</div>
+              <div style="font-size:13px;color:#374151;margin:4px 0;">or <span style="color:#D97706;font-weight:600;text-decoration:underline;cursor:pointer;">browse</span></div>
+              <div style="font-size:11px;color:#9CA3AF;margin-top:8px;">We accept PDF, DOC, PPT, XLSX, JPG, PNG, MP4</div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px;margin:14px 0;">
+              <div style="flex:1;height:1px;background:#E5E7EB;"></div>
+              <span style="font-size:12px;color:#9CA3AF;">OR</span>
+              <div style="flex:1;height:1px;background:#E5E7EB;"></div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="text" placeholder="Paste a Google Drive or Dropbox link" style="flex:1;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-size:12px;color:#111;" />
+              <button style="background:#F5B700;color:#1a1a1a;border:none;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Add link</button>
+            </div>
+          </div>
+
+          <button onclick="startUpload()" class="btn-yellow" style="width:100%;padding:13px 0;font-size:14px;border-radius:10px;margin-bottom:10px;">Upload &amp; continue</button>
+          <div style="text-align:center;"><span onclick="skipUpload()" style="font-size:13px;color:#9CA3AF;cursor:pointer;text-decoration:underline;">I'll do this later</span></div>
+        </div>
+      </div>
+
+      ${S.showUploadModal ? `
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:1000;">
+          <div style="background:#fff;border-radius:16px;padding:32px 36px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+            <div style="width:52px;height:52px;background:#FFFBEB;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px;">📤</div>
+            <div style="font-size:17px;font-weight:700;color:#111;margin-bottom:8px;">Uploading your files...</div>
+            <div style="height:6px;background:#F3F4F6;border-radius:3px;overflow:hidden;margin-bottom:10px;">
+              <div class="progress-bar-animated" style="height:100%;background:#F5B700;border-radius:3px;"></div>
+            </div>
+            <div style="font-size:12px;color:#9CA3AF;">This will just take a moment</div>
+          </div>
+        </div>` : ''}
+    </div>
+  `);
+}
+
+// ── Screen 3: Files Received ───────────────────────────────────────────
+function screenFilesReceived() {
+  const files = [
+    { name:'Impact_Report_2024.pdf',      type:'PDF',   size:'2.4 MB', iconBg:'#FEE2E2', iconColor:'#EF4444' },
+    { name:'Program_Overview.pptx',       type:'PPTX',  size:'5.1 MB', iconBg:'#FFF7ED', iconColor:'#F97316' },
+    { name:'Community_Survey_2024.csv',   type:'CSV',   size:'0.4 MB', iconBg:'#F0FDF4', iconColor:'#22C55E' },
+    { name:'Testimonials.docx',           type:'DOCX',  size:'1.9 MB', iconBg:'#EFF6FF', iconColor:'#3B82F6' },
+    { name:'Photos (Folder Link)',        type:'Drive', size:'Google Drive Link', iconBg:'#EFF6FF', iconColor:'#1D6B9C' },
+  ];
+  return pbScreen('We\'ve Got Your Files', `
+    <div style="max-width:680px;margin:0 auto;">
+
+      <!-- Success header -->
+      <div style="background:#fff;border:1.5px solid #D1FAE5;border-radius:14px;padding:24px 28px;margin-bottom:20px;display:flex;align-items:center;gap:18px;">
+        <div style="width:52px;height:52px;background:#F0FDF4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">✅</div>
+        <div>
+          <div style="font-size:20px;font-weight:800;color:#111;margin-bottom:4px;">Thanks! We've received your materials.</div>
+          <div style="font-size:13px;color:#6B7280;">Here's what we've received so far:</div>
+        </div>
+      </div>
+
+      <!-- File list -->
+      <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;overflow:hidden;margin-bottom:20px;">
+        ${files.map((f, i) => `
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:${i<files.length-1?'1px solid #F3F4F6':'none'};">
+            <div style="width:38px;height:38px;background:${f.iconBg};border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${f.iconColor};flex-shrink:0;">${f.type}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</div>
+              <div style="font-size:11px;color:#9CA3AF;margin-top:1px;">${f.size}</div>
+            </div>
+            <div style="font-size:11px;color:#9CA3AF;flex-shrink:0;margin-right:10px;">Today, 10:24 AM</div>
+            <span style="color:#22C55E;font-size:17px;flex-shrink:0;">✓</span>
+          </div>`).join('')}
+      </div>
+
+      <!-- Next step note -->
+      <div style="background:#FFFBEB;border:1.5px solid #FEF3C7;border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;gap:12px;align-items:flex-start;">
+        <span style="font-size:20px;flex-shrink:0;">✨</span>
+        <div style="font-size:13px;color:#92400E;line-height:1.6;">We'll review these materials and start pulling the insights that matter most for your mission.</div>
+      </div>
+
+      <button onclick="goFromFilesReceived()" class="btn-yellow" style="font-size:15px;padding:13px 32px;border-radius:10px;">Continue</button>
+    </div>
+  `);
+}
+
+// ── Screen 4: We're Working ────────────────────────────────────────────
+function screenWorking() {
+  if (S.analysisPhase === 0) {
+    startAnalysisTimer();
+    const scanItems = [
+      { icon:'📄', label:'Reading 2024_Impact_Report.pdf' },
+      { icon:'🔍', label:'Scanning community channels & social presence' },
+      { icon:'💰', label:'Matching against 1,200+ active funders' },
+      { icon:'✦',  label:'Building your personalized pipeline' },
+    ];
+    return pbScreen("We're Working & Here's What We Have So Far", `
+      <div style="max-width:620px;margin:0 auto;">
+        <div style="background:#fff;border-radius:16px;border:1px solid #E5E7EB;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.06);">
+          <div style="background:linear-gradient(135deg,#1a1a1a,#374151);padding:24px 28px;display:flex;align-items:center;gap:14px;">
+            <div style="width:44px;height:44px;background:rgba(245,183,0,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;animation:spin 2s linear infinite;">⚡</div>
+            <div>
+              <div style="font-size:18px;font-weight:700;color:#fff;">Analyzing your materials...</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.65);margin-top:2px;">This usually takes just a few seconds.</div>
+            </div>
+          </div>
+          <div style="height:4px;background:#F3F4F6;"><div style="height:100%;background:#F5B700;animation:progress-full 4s ease-out forwards;width:0%;"></div></div>
+          <div style="padding:8px 28px 20px;">
+            ${scanItems.map((item, i) => `
+              <div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:${i<3?'1px solid #F3F4F6':'none'};opacity:0;animation:item-appear .4s ease forwards;animation-delay:${0.4+i*.85}s;">
+                <div style="width:32px;height:32px;background:#F3F4F6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${item.icon}</div>
+                <span style="font-size:14px;color:#374151;flex:1;">${item.label}</span>
+                <span style="opacity:0;animation:check-pop .3s ease forwards;animation-delay:${.85+i*.85}s;color:#22C55E;font-size:16px;font-weight:700;">✓</span>
+              </div>`).join('')}
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:16px;font-size:13px;color:#9CA3AF;">Hang tight — we'll show you what we found in a moment.</div>
+      </div>
+    `);
+  }
+
+  // Phase 1 — Results
+  return pbScreen("We're Working & Here's What We Have So Far", `
+    <div style="max-width:720px;margin:0 auto;">
+      <div style="margin-bottom:6px;">
+        <h2 style="font-size:22px;font-weight:800;color:#111;margin:0 0 6px;">Here's what we've found so far</h2>
+        <p style="font-size:13px;color:#6B7280;margin:0 0 22px;line-height:1.6;">Based on publicly available data, your website, and your social presence—before we even review what you uploaded.</p>
+      </div>
+
+      <!-- Stats row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px;">
+        ${[
+          { n:'80',     label:'Stories Found',   sub:'From your community and social media', color:'#111', bg:'#FFF9E6', border:'#FEF3C7', icon:'👥' },
+          { n:'186',    label:'Funders Matched', sub:'Active and aligned',                   color:'#111', bg:'#FFF9E6', border:'#FEF3C7', icon:'🤝' },
+          { n:'$105M+', label:'Grant Potential', sub:'Estimated total',                      color:'#111', bg:'#FFF9E6', border:'#FEF3C7', icon:'💰' },
+        ].map((s,idx) => `
+          <div style="background:${s.bg};border:1.5px solid ${s.border};border-radius:14px;padding:18px 20px;opacity:0;animation:stat-count .5s ease forwards;animation-delay:${idx*.15}s;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="font-size:20px;">${s.icon}</span></div>
+            <div style="font-size:30px;font-weight:800;color:#111;line-height:1;">${s.n}</div>
+            <div style="font-size:13px;font-weight:700;color:#374151;margin-top:4px;">${s.label}</div>
+            <div style="font-size:11px;color:#9CA3AF;margin-top:3px;">${s.sub}</div>
+          </div>`).join('')}
+      </div>
+
+      <!-- Materials section -->
+      <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:22px 24px;margin-bottom:16px;opacity:0;animation:result-rise .5s ease forwards;animation-delay:.45s;">
+        <div style="font-size:15px;font-weight:700;color:#111;margin-bottom:6px;">Your materials help us make this stronger</div>
+        <div style="font-size:13px;color:#6B7280;line-height:1.6;margin-bottom:16px;">We'll review what you uploaded to better understand your impact, fill in gaps, and tailor your story and funding strategy.</div>
+        ${[
+          'We noticed you uploaded an impact report. If you have testimonials or community stories, those will help us build stronger narratives.',
+          'The more you share and the more you use PosterChild, the stronger this becomes.',
+        ].map(t => `
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid #F3F4F6;">
+            <span style="font-size:16px;flex-shrink:0;color:#F5B700;">⚡</span>
+            <span style="font-size:13px;color:#374151;">${t}</span>
+          </div>`).join('')}
+      </div>
+
+      <button onclick="unlockFullStrategy()" class="btn-yellow" style="font-size:15px;padding:13px 28px;border-radius:10px;opacity:0;animation:result-rise .4s ease forwards;animation-delay:.6s;">Unlock your full funding strategy →</button>
+    </div>
+  `);
+}
+
+// ── Screen 5: Schedule with Jayla ─────────────────────────────────────
+function screenScheduleJayla() {
+  const dates = [
+    { day:'Tue', date:'May 27' }, { day:'Wed', date:'May 28' },
+    { day:'Thu', date:'May 29' }, { day:'Fri', date:'May 30' },
+  ];
+  const times = ['9:00 AM','11:00 AM','1:00 PM','3:00 PM'];
+  const perks = [
+    { icon:'💼', title:"She'll come prepared", desc:'We review your materials ahead of time' },
+    { icon:'💛', title:'No pressure, just strategy', desc:'A real conversation, not a sales call' },
+    { icon:'🎯', title:'Your mission is the focus', desc:'Everything is tailored to your goals' },
+  ];
+  return pbScreen('Schedule with Jayla', `
+    <div style="max-width:640px;margin:0 auto;">
+      <!-- Jayla card -->
+      <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:16px;padding:24px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+          <div style="width:56px;height:56px;background:linear-gradient(135deg,#F5B700,#E5A800);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">👩🏾</div>
+          <div>
+            <div style="font-size:18px;font-weight:800;color:#111;">Meet with Jayla</div>
+            <div style="font-size:13px;color:#6B7280;margin-top:2px;">Funding &amp; Story Strategist</div>
+            <div style="display:flex;gap:12px;margin-top:5px;">
+              <span style="font-size:12px;color:#374151;">⏱ 30 min</span>
+              <span style="font-size:12px;color:#374151;">💻 Zoom</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:12px;">Choose a time that works for you</div>
+
+        <!-- Date row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr) auto;gap:8px;margin-bottom:14px;align-items:center;">
+          ${dates.map(d => `
+            <div onclick="selectPBDate('${d.date}')" class="pb-date-btn" style="border-color:${S.selectedDate===d.date?'#F5B700':'#E5E7EB'};background:${S.selectedDate===d.date?'#FFFBEB':'#fff'};">
+              <div style="font-size:11px;color:#9CA3AF;font-weight:500;">${d.day}</div>
+              <div style="font-size:13px;font-weight:700;color:${S.selectedDate===d.date?'#92400E':'#111'};">${d.date}</div>
+            </div>`).join('')}
+          <span style="font-size:11px;color:#D97706;cursor:pointer;white-space:nowrap;text-decoration:underline;">View more →</span>
+        </div>
+
+        <!-- Time row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;">
+          ${times.map(t => `
+            <div onclick="selectPBTime('${t}')" class="pb-time-btn" style="border-color:${S.selectedTime===t?'#F5B700':'#E5E7EB'};background:${S.selectedTime===t?'#FFFBEB':'#fff'};color:${S.selectedTime===t?'#92400E':'#374151'};">
+              ${t}
+            </div>`).join('')}
+        </div>
+
+        <button onclick="confirmMeeting()" class="btn-yellow" style="width:100%;padding:13px 0;font-size:15px;border-radius:10px;${!S.selectedDate||!S.selectedTime?'opacity:.5;cursor:not-allowed;':''}" ${!S.selectedDate||!S.selectedTime?'disabled':''}>Confirm meeting</button>
+      </div>
+
+      <!-- Perks -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;">
+        ${perks.map(p => `
+          <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:12px;padding:16px;text-align:center;">
+            <div style="font-size:22px;margin-bottom:8px;">${p.icon}</div>
+            <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:4px;">${p.title}</div>
+            <div style="font-size:11px;color:#9CA3AF;line-height:1.5;">${p.desc}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  `);
+}
+
+// ── Screen 6: You're All Set ───────────────────────────────────────────
+function screenAllSet() {
+  const date = S.selectedDate || 'May 27';
+  const time = S.selectedTime || '11:00 AM';
+  return pbScreen("You're All Set!", `
+    <div style="max-width:580px;margin:0 auto;">
+
+      <!-- Confirmation card -->
+      <div style="background:#fff;border:1.5px solid #D1FAE5;border-radius:16px;padding:32px;margin-bottom:20px;text-align:center;">
+        <div style="width:60px;height:60px;background:#F0FDF4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;">✅</div>
+        <h2 style="font-size:24px;font-weight:800;color:#111;margin:0 0 6px;">You're booked with Jayla! 🎉</h2>
+        <p style="font-size:14px;color:#6B7280;margin:0 0 24px;">We're looking forward to meeting with you.</p>
+
+        <div style="background:#F9FAFB;border-radius:12px;padding:16px;margin-bottom:16px;text-align:left;">
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
+            <span style="font-size:18px;">📅</span>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#111;">${date} · ${time} – ${time.replace('AM','').replace('PM','').trim().split(':').map((v,i)=>i===0?String(parseInt(v)+0):v).join(':')} (30 min)</div>
+              <div style="font-size:12px;color:#9CA3AF;">Zoom · A calendar invite has been sent to you.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#FFFBEB;border:1.5px solid #FEF3C7;border-radius:12px;padding:16px;text-align:left;margin-bottom:20px;">
+          <div style="font-size:13px;font-weight:700;color:#92400E;margin-bottom:10px;">🔓 Your workspace will be unlocked during your walkthrough.</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${['Story ideas','Funding matches','Next steps for your mission'].map(item => `
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;">
+                <span style="color:#22C55E;font-size:14px;font-weight:700;">✓</span> ${item}
+              </div>`).join('')}
+          </div>
+          <div style="font-size:13px;color:#6B7280;margin-top:10px;font-style:italic;">This meeting is where everything comes together.</div>
+        </div>
+
+        <button onclick="goToWorkspace()" class="btn-yellow" style="width:100%;padding:13px 0;font-size:15px;border-radius:10px;margin-bottom:12px;">View meeting details</button>
+        <div style="font-size:13px;color:#D97706;cursor:pointer;font-weight:600;">Add to calendar</div>
+      </div>
+
+      <!-- Security note -->
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:14px 16px;background:#F9FAFB;border-radius:10px;">
+        <span style="font-size:18px;flex-shrink:0;">🔒</span>
+        <p style="font-size:12px;color:#9CA3AF;margin:0;line-height:1.6;">We take security seriously. Your information is encrypted and never shared without your permission.</p>
+      </div>
+    </div>
+  `);
+}
+
 // ── Main Render ───────────────────────────────────────────────────────
 function render() {
   try {
     ensureValidScreen();
     const map = {
       email:screenEmail,
+      'confirm-details':screenConfirmDetails,
+      'add-materials':screenAddMaterials,
+      'files-received':screenFilesReceived,
+      working:screenWorking,
+      'schedule-jayla':screenScheduleJayla,
+      'all-set':screenAllSet,
+      // legacy screens kept for reference
       'upload-landing':screenUploadLanding,
       'great-start':screenGreatStart,
       'pipeline-ready':screenPipelineReady,
@@ -2343,6 +2743,8 @@ window.setPraiseVariant = setPraiseVariant;
 window.startUpload = startUpload;
 window.skipUpload = skipUpload;
 window.goFromUploadSuccess = goFromUploadSuccess;
+window.goFromFilesReceived = goFromFilesReceived;
+window.unlockFullStrategy = unlockFullStrategy;
 window.goFromGreatStart = goFromGreatStart;
 window.openScheduleModal = openScheduleModal;
 window.closeScheduleModal = closeScheduleModal;
