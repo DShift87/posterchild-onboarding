@@ -338,7 +338,7 @@ function confirmMeeting() {
   S.screen = 'all-set';
   render();
 }
-function goToWorkspace() { S.screen = 'welcome'; render(); }
+function goToWorkspace() { toast('🎉 That\'s the end of the pre-boarding prototype!'); }
 
 function ensureForgeBaseline() {
   if (!S.forgeBaseline) {
@@ -2793,11 +2793,7 @@ function render() {
       'pipeline-ready':screenPipelineReady,
       'no-schedule':screenNoSchedule,
       booked:screenBooked,
-      welcome:screenWelcome, narrative:screenNarrative, template:screenTemplate,
-      logistics:screenLogistics, funders:screenFunders, forge:screenForge, celebration:screenCelebration,
-      dashboard:screenDashboard,
-      'jayla-prep':screenJaylaPrep, 'jayla-live':screenJaylaLive,
-      'jayla-alerts':screenJaylaAlerts, 'jayla-praise':screenJaylaPraise
+      // post-boarding screens hidden from prototype
     };
     document.getElementById('app').innerHTML = (map[S.screen]||screenEmail)();
     document.querySelector('[style*="overflow-y:auto;padding:24px"]')?.scrollTo(0,0);
