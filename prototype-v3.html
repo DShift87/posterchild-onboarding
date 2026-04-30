@@ -2438,75 +2438,103 @@ function screenConfirmDetails() {
 
 // ── Screen 2: Add Your Materials ──────────────────────────────────────
 function screenAddMaterials() {
-  const checklist = [
-    { icon:'📄', title:'Testimonials or success stories', desc:'Help us showcase the real impact you create.' },
-    { icon:'📊', title:'Impact reports or outcomes data', desc:'Show your progress with numbers and results.' },
-    { icon:'💬', title:'Survey or community feedback', desc:'Help us understand what matters most.' },
-    { icon:'📷', title:'Photos or brand materials', desc:'Help us represent your mission authentically.', optional:true },
-  ];
-  return pbScreen('Add Your Materials', `
-    <div style="max-width:760px;margin:0 auto;">
-      <div style="margin-bottom:6px;">
-        <h2 style="font-size:22px;font-weight:800;color:#111;margin:0 0 10px;">To make this as strong as possible,<br>a few things really help.</h2>
-        <p style="font-size:14px;color:#6B7280;line-height:1.65;margin:0 0 24px;">We've already started gathering information—but adding a few materials helps us better understand your impact and match you with the right opportunities.</p>
-      </div>
+  // SVG icons matching the mockup line-art style
+  const icons = {
+    people: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="17" cy="9" r="2.5"/><path d="M21 21v-1.5a3.5 3.5 0 00-2.5-3.35"/></svg>`,
+    chart:  `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/><path d="M8 13h2M8 17h2M13 13h3M13 17h3"/></svg>`,
+    survey: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/><rect x="8.5" y="6" width="1" height="1" fill="#374151"/></svg>`,
+    photo:  `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M9 5l1.5-2h3L15 5"/></svg>`,
+    cloud:  `<svg width="44" height="36" viewBox="0 0 44 36" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M34 28H10a8 8 0 01-1-15.9A10 10 0 0130 14a6 6 0 015 6z"/><path d="M22 18v12M18 26l4 4 4-4"/></svg>`,
+    link:   `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`,
+    bulb:   `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 017 7c0 2.5-1.3 4.7-3.3 6H8.3A7 7 0 015 9a7 7 0 017-7z"/></svg>`,
+  };
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
-        <!-- Left: checklist + upload -->
+  const checklist = [
+    { icon: icons.people, title:'Testimonials or success stories',       desc:'Help us showcase the real impact you create.', optional:false },
+    { icon: icons.chart,  title:'Impact reports or outcomes data',        desc:'Show your progress with numbers and results.',  optional:false },
+    { icon: icons.survey, title:'Surveys or community feedback',          desc:'Help us understand what matters most.',         optional:false },
+    { icon: icons.photo,  title:'Photos or brand materials',              desc:'Help us represent your mission authentically.', optional:true  },
+  ];
+
+  return pbScreen('Add Your Materials', `
+    <div style="max-width:860px;margin:0 auto;">
+
+      <!-- Headline -->
+      <h1 style="font-size:28px;font-weight:800;color:#111;line-height:1.2;margin:0 0 10px;">To make this as strong as possible,<br>a few things really help.</h1>
+      <p style="font-size:14px;color:#6B7280;line-height:1.65;margin:0 0 28px;max-width:480px;">We've already started gathering information—but adding a few materials helps us better understand your impact and match you with the right opportunities.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;">
+
+        <!-- ── Left: checklist + why this matters ── -->
         <div>
-          <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:20px;margin-bottom:16px;">
-            ${checklist.map(c => `
-              <div style="display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid #F3F4F6;">
-                <span style="font-size:18px;flex-shrink:0;margin-top:1px;">${c.icon}</span>
+          <!-- Checklist -->
+          <div style="margin-bottom:20px;">
+            ${checklist.map((c, i) => `
+              <div style="display:flex;gap:16px;align-items:flex-start;padding:14px 0;${i < checklist.length-1 ? 'border-bottom:1px solid #F3F4F6;' : ''}">
+                <div style="width:36px;height:36px;background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${c.icon}</div>
                 <div>
-                  <div style="font-size:13px;font-weight:600;color:#111;">${c.title}${c.optional?' <span style="font-size:11px;font-weight:400;color:#9CA3AF;">(optional)</span>':''}</div>
-                  <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">${c.desc}</div>
+                  <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:3px;">${c.title}${c.optional ? ' <span style="font-size:12px;font-weight:400;color:#9CA3AF;">(optional)</span>' : ''}</div>
+                  <div style="font-size:13px;color:#6B7280;line-height:1.5;">${c.desc}</div>
                 </div>
               </div>`).join('')}
           </div>
 
-          <details style="background:#F9FAFB;border-radius:10px;padding:12px 16px;">
-            <summary style="font-size:13px;font-weight:600;color:#374151;cursor:pointer;">Why this matters</summary>
-            <p style="font-size:12px;color:#6B7280;margin:8px 0 0;line-height:1.6;">The more we understand your story, the better we can tell it clearly, match you with aligned funders, and help you raise more support.</p>
-          </details>
-        </div>
-
-        <!-- Right: upload zone -->
-        <div>
-          <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:20px;margin-bottom:14px;">
-            <div onclick="startUpload()" style="border:2px dashed #D1D5DB;border-radius:10px;padding:28px 16px;text-align:center;cursor:pointer;background:#FAFAFA;transition:border-color .15s;" onmouseover="this.style.borderColor='#F5B700'" onmouseout="this.style.borderColor='#D1D5DB'">
-              <div style="font-size:32px;margin-bottom:10px;">☁️</div>
-              <div style="font-size:14px;font-weight:600;color:#374151;">Drag &amp; drop files here</div>
-              <div style="font-size:13px;color:#374151;margin:4px 0;">or <span style="color:#D97706;font-weight:600;text-decoration:underline;cursor:pointer;">browse</span></div>
-              <div style="font-size:11px;color:#9CA3AF;margin-top:8px;">We accept PDF, DOC, PPT, XLSX, JPG, PNG, MP4</div>
-            </div>
-
-            <div style="display:flex;align-items:center;gap:10px;margin:14px 0;">
-              <div style="flex:1;height:1px;background:#E5E7EB;"></div>
-              <span style="font-size:12px;color:#9CA3AF;">OR</span>
-              <div style="flex:1;height:1px;background:#E5E7EB;"></div>
-            </div>
-
-            <div style="display:flex;align-items:center;gap:10px;">
-              <input type="text" placeholder="Paste a Google Drive or Dropbox link" style="flex:1;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-size:12px;color:#111;" />
-              <button style="background:#F5B700;color:#1a1a1a;border:none;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Add link</button>
+          <!-- Why this matters -->
+          <div style="background:#FFFBEB;border:1.5px solid #FEF3C7;border-radius:12px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;">
+            <div style="flex-shrink:0;margin-top:1px;">${icons.bulb}</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:#92400E;margin-bottom:5px;">Why this matters</div>
+              <div style="font-size:13px;color:#78350F;line-height:1.6;">The more we understand your story, the better we can tell it clearly, match you with aligned funders, and help you raise more support.</div>
             </div>
           </div>
+        </div>
 
-          <button onclick="startUpload()" class="btn-yellow" style="width:100%;padding:13px 0;font-size:14px;border-radius:10px;margin-bottom:10px;">Upload &amp; continue</button>
-          <div style="text-align:center;"><span onclick="skipUpload()" style="font-size:13px;color:#9CA3AF;cursor:pointer;text-decoration:underline;">I'll do this later</span></div>
+        <!-- ── Right: upload + CTA ── -->
+        <div style="display:flex;flex-direction:column;gap:14px;">
+
+          <!-- Drag & drop zone — dashed yellow border -->
+          <div onclick="startUpload()"
+            style="border:2px dashed #F5C127;border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;background:#FEFCE8;transition:background .15s;"
+            onmouseover="this.style.background='#FEF9C3'" onmouseout="this.style.background='#FEFCE8'">
+            <div style="display:flex;justify-content:center;margin-bottom:12px;">${icons.cloud}</div>
+            <div style="font-size:15px;font-weight:700;color:#111;margin-bottom:4px;">Drag &amp; drop files here</div>
+            <div style="font-size:14px;color:#374151;margin-bottom:10px;">or <span style="color:#D97706;font-weight:700;text-decoration:underline;">browse</span></div>
+            <div style="font-size:12px;color:#9CA3AF;line-height:1.5;">We accept: PDF, DOC, PPT,<br>XLSX, JPG, PNG, MP4</div>
+          </div>
+
+          <!-- OR divider -->
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="flex:1;height:1px;background:#E5E7EB;"></div>
+            <span style="font-size:13px;font-weight:600;color:#9CA3AF;">OR</span>
+            <div style="flex:1;height:1px;background:#E5E7EB;"></div>
+          </div>
+
+          <!-- Google Drive / Dropbox row -->
+          <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+            <div style="flex-shrink:0;">${icons.link}</div>
+            <div style="flex:1;font-size:13px;color:#374151;line-height:1.4;">Paste a Google Drive<br>or Dropbox link</div>
+            <button style="background:#F5B700;color:#1a1a1a;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Add link</button>
+          </div>
+
+          <!-- CTA -->
+          <button onclick="startUpload()" class="btn-yellow" style="width:100%;padding:14px 0;font-size:15px;border-radius:10px;">Upload &amp; continue</button>
+          <div style="text-align:center;margin-top:-4px;">
+            <span onclick="skipUpload()" style="font-size:13px;color:#374151;cursor:pointer;text-decoration:underline;font-style:italic;">I'll do this later</span>
+          </div>
         </div>
       </div>
 
       ${S.showUploadModal ? `
-        <div style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:1000;">
-          <div style="background:#fff;border-radius:16px;padding:32px 36px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2);">
-            <div style="width:52px;height:52px;background:#FFFBEB;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px;">📤</div>
-            <div style="font-size:17px;font-weight:700;color:#111;margin-bottom:8px;">Uploading your files...</div>
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;">
+          <div style="background:#fff;border-radius:16px;padding:36px 40px;width:340px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.18);">
+            <div style="width:56px;height:56px;background:#FFFBEB;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div style="font-size:18px;font-weight:700;color:#111;margin-bottom:8px;">Uploading your files...</div>
             <div style="height:6px;background:#F3F4F6;border-radius:3px;overflow:hidden;margin-bottom:10px;">
               <div class="progress-bar-animated" style="height:100%;background:#F5B700;border-radius:3px;"></div>
             </div>
-            <div style="font-size:12px;color:#9CA3AF;">This will just take a moment</div>
+            <div style="font-size:13px;color:#9CA3AF;">This will just take a moment</div>
           </div>
         </div>` : ''}
     </div>
