@@ -22,7 +22,7 @@
     .step-circle.done { background:#F5B700; color:#fff; border:2px solid #F5B700; }
     .step-circle.active { background:#fff; border:2px solid #F5B700; color:#F5B700; }
     .step-circle.pending { background:#fff; border:2px solid #E5E7EB; color:#9CA3AF; }
-    .btn-yellow { background:#F5B700; color:#1a1a1a; font-weight:600; font-size:13px; padding:8px 16px; border-radius:8px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all .15s; }
+    .btn-yellow { background:#F5B700; color:#1a1a1a; font-weight:600; font-size:13px; padding:8px 16px; border-radius:8px; border:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; transition:all .15s; text-align:center; }
     .btn-yellow:hover { background:#E5A800; }
     .btn-yellow:disabled { background:#E5E7EB; color:#9CA3AF; cursor:not-allowed; }
     .btn-outline { background:#fff; color:#374151; font-weight:500; font-size:13px; padding:8px 16px; border-radius:8px; border:1.5px solid #E5E7EB; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all .15s; }
@@ -74,7 +74,7 @@
     @keyframes fade-in { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
     .pb-animate { animation: fade-in .35s ease forwards; }
     .progress-bar-animated { animation: progress-fill 1.8s cubic-bezier(.4,0,.2,1) forwards; }
-    .pb-btn-purple { background:#5B4FCF; color:#fff; font-weight:700; font-size:15px; padding:14px 0; border-radius:10px; border:none; cursor:pointer; width:100%; transition:background .15s; }
+    .pb-btn-purple { background:#5B4FCF; color:#fff; font-weight:700; font-size:15px; padding:14px 0; border-radius:10px; border:none; cursor:pointer; width:100%; transition:background .15s; display:flex; align-items:center; justify-content:center; text-align:center; }
     .pb-btn-purple:hover { background:#4C41B8; }
     .pb-btn-purple:disabled { background:#C4C0E8; cursor:not-allowed; }
     .pb-date-btn { flex:1; background:#fff; border:1.5px solid #E5E7EB; border-radius:10px; padding:10px 6px; cursor:pointer; text-align:center; transition:all .15s; }
