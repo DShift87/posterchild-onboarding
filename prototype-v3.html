@@ -2314,69 +2314,124 @@ function screenEmail() {
 
 // ── Screen 1: Confirm Org Details & Brand ─────────────────────────────
 function screenConfirmDetails() {
-  const socialPlatforms = [
-    { label:'f', bg:'#1877F2', color:'#fff' },
-    { label:'in', bg:'#0A66C2', color:'#fff' },
-    { label:'▶', bg:'#FF0000', color:'#fff' },
+  const brandColors = [
+    { hex:'#2B6E4E', label:'Primary' },
+    { hex:'#C8973A', label:'Secondary' },
+    { hex:'#F5C127', label:'Accent' },
+    { hex:'#E8E3DC', label:'Neutral' },
   ];
-  const brandColors = ['#2B7A4B','#1C3527','#E8932A'];
+
+  // SVG illustration: hands holding a heart (matches mockup)
+  const logoSVG = `<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M40 22 C40 22 32 14 24 18 C16 22 16 32 24 38 L40 52 L56 38 C64 32 64 22 56 18 C48 14 40 22 40 22Z" stroke="#6B3FA0" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+    <path d="M24 52 C20 50 14 48 12 52 C10 56 14 60 18 60 L40 68 L62 60 C66 60 70 56 68 52 C66 48 60 50 56 52 L46 56" stroke="#6B3FA0" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M40 52 L34 56" stroke="#6B3FA0" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>`;
+
+  const fields = [
+    { label:'Organization name', value:'Helping Hands Youth Center' },
+    { label:'EIN', value:'45-1234567' },
+    { label:'Website', value:'helpinghandsyouth.org' },
+  ];
+
   return pbScreen('Confirm Your Organization Details & Brand', `
-    <div style="max-width:840px;margin:0 auto;">
-      <p style="font-size:14px;color:#6B7280;line-height:1.65;margin-bottom:24px;">We already have some information about you. Please review and confirm so everything is accurate.</p>
-      <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;margin-bottom:24px;">
+    <div style="max-width:860px;margin:0 auto;">
 
-        <!-- Left: Org form -->
-        <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:24px;">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9CA3AF;margin-bottom:18px;">Organization details</div>
+      <!-- Page title -->
+      <h1 style="font-size:28px;font-weight:800;color:#111;margin:0 0 8px;line-height:1.2;">Let's confirm your<br>organization details</h1>
+      <p style="font-size:14px;color:#6B7280;line-height:1.65;margin:0 0 28px;">We already have some information about you.<br>Please review and confirm so everything is accurate.</p>
 
-          ${[
-            { label:'Organization name', value:'Helping Hands Youth Center' },
-            { label:'EIN', value:'45-1234567' },
-            { label:'Website', value:'helpinghandsyouth.org' },
-          ].map(f => `
-            <div style="margin-bottom:14px;">
-              <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px;">${f.label}</label>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <input type="text" value="${f.value}" style="flex:1;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 12px;font-size:13px;color:#111;background:#fff;" />
-                <span style="color:#22C55E;font-size:17px;flex-shrink:0;">✓</span>
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
+
+        <!-- ── Left: Org details form ── -->
+        <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:26px;">
+
+          <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:18px;">Organization details</div>
+
+          ${fields.map(f => `
+            <div style="margin-bottom:16px;">
+              <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:6px;">${f.label}</label>
+              <div style="position:relative;">
+                <input type="text" value="${f.value}"
+                  style="width:100%;border:1.5px solid #E5E7EB;border-radius:9px;padding:11px 40px 11px 13px;font-size:14px;color:#111;background:#fff;box-sizing:border-box;" />
+                <span style="position:absolute;right:13px;top:50%;transform:translateY(-50%);color:#22C55E;font-size:16px;font-weight:700;">✓</span>
               </div>
             </div>`).join('')}
 
-          <div style="margin-bottom:20px;">
-            <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:8px;">Social media <span style="color:#9CA3AF;font-weight:400;">(optional)</span></label>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              ${socialPlatforms.map(p => `<div style="width:30px;height:30px;background:${p.bg};border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${p.color};cursor:pointer;">${p.label}</div>`).join('')}
-              <span style="font-size:12px;color:#6B7280;cursor:pointer;text-decoration:underline;">+ Add more</span>
+          <!-- Social media -->
+          <div style="margin-bottom:22px;">
+            <label style="font-size:13px;font-weight:500;color:#374151;display:block;margin-bottom:10px;">Social media <span style="color:#9CA3AF;font-weight:400;">(optional)</span></label>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <!-- Facebook -->
+              <div style="width:40px;height:40px;background:#1877F2;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                <span style="color:#fff;font-size:16px;font-weight:900;font-family:serif;line-height:1;">f</span>
+              </div>
+              <!-- Instagram -->
+              <div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">
+                <span style="font-size:18px;line-height:1;">📷</span>
+              </div>
+              <!-- LinkedIn -->
+              <div style="width:40px;height:40px;background:#0A66C2;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                <span style="color:#fff;font-size:13px;font-weight:900;letter-spacing:-.5px;">in</span>
+              </div>
+              <button style="background:#fff;border:1.5px solid #E5E7EB;border-radius:20px;padding:8px 16px;font-size:13px;color:#374151;cursor:pointer;font-weight:500;">+ Add more</button>
             </div>
           </div>
 
-          <div style="background:#F9FAFB;border-radius:10px;padding:14px;display:flex;gap:10px;align-items:flex-start;">
-            <span style="font-size:18px;flex-shrink:0;">🛡️</span>
-            <p style="font-size:12px;color:#6B7280;margin:0;line-height:1.55;">This information helps us build an accurate foundation for your funding strategy.</p>
+          <!-- Trust note -->
+          <div style="background:#F9FAFB;border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style="flex-shrink:0;margin-top:1px;">
+              <path d="M11 2L3 6v5c0 4.42 3.47 8.56 8 9.54C16.53 19.56 20 15.42 20 11V6l-9-4z" stroke="#22C55E" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+              <path d="M8 11l2 2 4-4" stroke="#22C55E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p style="font-size:13px;color:#6B7280;margin:0;line-height:1.6;">This information helps us build an accurate foundation for your funding strategy.</p>
           </div>
         </div>
 
-        <!-- Right: Brand preview -->
-        <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;padding:24px;">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9CA3AF;margin-bottom:14px;">Brand preview</div>
+        <!-- ── Right: Brand preview ── -->
+        <div style="background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;">
 
-          <div style="background:#F9FAFB;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;">
-            <div style="background:#fff;border-radius:10px;padding:14px 12px;display:flex;align-items:center;gap:10px;margin-bottom:10px;border:1px solid #E5E7EB;">
-              <div style="width:36px;height:36px;background:#E8F5EE;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💚</div>
-              <span style="font-size:12px;font-weight:700;color:#111;line-height:1.3;text-align:left;">Helping Hands<br>Youth Center</span>
+          <div style="padding:18px 20px 14px;">
+            <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:14px;">Brand preview</div>
+
+            <!-- Large logo preview -->
+            <div style="background:#F9F8FF;border-radius:12px;padding:24px 16px;text-align:center;margin-bottom:18px;">
+              ${logoSVG}
+              <div style="font-size:17px;font-weight:800;color:#111;margin-top:12px;line-height:1.3;">Helping Hands<br>Youth Center</div>
             </div>
-            <button style="background:#fff;border:1.5px solid #E5E7EB;border-radius:7px;padding:6px 14px;font-size:12px;color:#374151;cursor:pointer;">Replace logo</button>
+
+            <!-- Logo row -->
+            <div style="margin-bottom:16px;">
+              <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:10px;">Logo</div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:44px;height:44px;background:#F9F8FF;border-radius:10px;border:1px solid #E5E7EB;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="26" height="26" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M40 22 C40 22 32 14 24 18 C16 22 16 32 24 38 L40 52 L56 38 C64 32 64 22 56 18 C48 14 40 22 40 22Z" stroke="#6B3FA0" stroke-width="3" fill="none"/>
+                    <path d="M24 52 C20 50 14 48 12 52 C10 56 14 60 18 60 L40 68 L62 60 C66 60 70 56 68 52 C66 48 60 50 56 52 L46 56" stroke="#6B3FA0" stroke-width="3" fill="none" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <button style="background:#fff;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:500;color:#374151;cursor:pointer;flex:1;">Replace</button>
+              </div>
+            </div>
+
+            <!-- Brand colors -->
+            <div style="margin-bottom:12px;">
+              <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:10px;">Brand colors</div>
+              <div style="display:flex;gap:9px;margin-bottom:10px;">
+                ${brandColors.map(c => `
+                  <div title="${c.label}" style="width:36px;height:36px;background:${c.hex};border-radius:50%;border:2px solid ${c.hex==='#E8E3DC'?'#D1D5DB':'transparent'};box-shadow:0 1px 3px rgba(0,0,0,.12);cursor:pointer;flex-shrink:0;"></div>`).join('')}
+              </div>
+              <button style="background:#FFF9E6;border:1.5px solid #F5C127;border-radius:8px;padding:8px 0;font-size:13px;font-weight:600;color:#92400E;cursor:pointer;width:100%;">Edit colors</button>
+            </div>
           </div>
 
-          <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px;">Brand colors</div>
-          <div style="display:flex;gap:8px;margin-bottom:8px;">
-            ${brandColors.map(c => `<div style="width:34px;height:34px;background:${c};border-radius:50%;border:2px solid #E5E7EB;cursor:pointer;"></div>`).join('')}
+          <!-- Full-width CTA pinned to bottom -->
+          <div style="padding:16px 20px;border-top:1px solid #F3F4F6;margin-top:auto;">
+            <button onclick="go('add-materials')" class="btn-yellow" style="width:100%;padding:14px 0;font-size:15px;border-radius:10px;">Confirm &amp; continue</button>
           </div>
-          <span style="font-size:12px;color:#6B7280;text-decoration:underline;cursor:pointer;">Edit colors</span>
         </div>
+
       </div>
-
-      <button onclick="go('add-materials')" class="btn-yellow" style="font-size:15px;padding:13px 32px;border-radius:10px;">Confirm &amp; continue</button>
     </div>
   `);
 }
